@@ -1,3 +1,5 @@
+This is still a work in progress, please excuse the numerous bugs and other mishaps
+
 This is a web-based version of the Hodgkin and Huxley simulator (HHsim) created by 
 David S. Touretzky, Mark V. Albert, Nathaniel D. Daw, Alok Ladsariya and Mahtiyar Bonakdarpour. 
 The simulator was a fantastic tool for my learning, but it is no longer compatible with newer versions of Matlab. 
