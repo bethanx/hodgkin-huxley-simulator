@@ -10,8 +10,8 @@ class PlotManager {
         this.defaultYMin = -100;
         this.defaultYMax = 60;
         this.defaultXMin = 0;
-        this.defaultXMax = 100;
-        this.windowSize = 100;
+        this.defaultXMax = 50;
+        this.windowSize = 50;
         this.slideAmount = 10;
     }
 
@@ -85,9 +85,12 @@ class PlotManager {
             const slidesNeeded = Math.floor((lastTime - currentMax) / this.slideAmount) + 1;
             const slideDistance = this.slideAmount * slidesNeeded;
             
-            // Update the window position
-            this.chart.options.scales.x.min = currentMin + slideDistance;
-            this.chart.options.scales.x.max = currentMax + slideDistance;
+            // Update the window position, maintaining the fixed window size
+            const newMin = currentMin + slideDistance;
+            const newMax = newMin + this.windowSize;
+            
+            this.chart.options.scales.x.min = newMin;
+            this.chart.options.scales.x.max = newMax;
         }
 
         // Auto-adjust y-axis if data extends beyond current view
