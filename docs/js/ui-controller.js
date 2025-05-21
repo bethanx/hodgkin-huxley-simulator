@@ -8,7 +8,7 @@ class UIController {
         this.activeTab = 'membrane';
         
         // Bind simulator update callback
-        this.simulator.onUpdate = (data, isReset) => this.plotManager.updatePlot(data, isReset);
+        this.simulator.onUpdate = (data, isReset) => this.plotManager.updatePlots(data, isReset);
     }
 
     // Initialize the UI
@@ -21,7 +21,7 @@ class UIController {
 
     // Initialize plots
     initializePlots() {
-        this.plotManager.initMainPlot('plotCanvas');
+        this.plotManager.initPlots('plotCanvas', 'gateKineticsCanvas');
     }
 
     // Set up event listeners for all UI elements
