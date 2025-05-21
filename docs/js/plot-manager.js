@@ -19,6 +19,14 @@ class PlotManager {
         this.bufferSize = 5000;
         this.updateCount = 0;
         this.updateThreshold = 4;
+
+        // Fixed y-axis ranges
+        this.voltageYMin = -100;
+        this.voltageYMax = 60;
+        this.stimulusYMin = -20;
+        this.stimulusYMax = 20;
+        this.gateYMin = 0;
+        this.gateYMax = 1;
     }
 
     // Initialize both plots
@@ -64,8 +72,8 @@ class PlotManager {
                         }
                     },
                     y: {
-                        min: this.defaultYMin,
-                        max: this.defaultYMax,
+                        min: this.voltageYMin,
+                        max: this.voltageYMax,
                         title: {
                             display: true,
                             text: 'Membrane Potential (mV)'
@@ -74,8 +82,8 @@ class PlotManager {
                     y2: {
                         type: 'linear',
                         position: 'right',
-                        min: -20,
-                        max: 20,
+                        min: this.stimulusYMin,
+                        max: this.stimulusYMax,
                         title: {
                             display: true,
                             text: 'Stimulus Current (μA/cm²)'
@@ -136,8 +144,8 @@ class PlotManager {
                         }
                     },
                     y: {
-                        min: 0,
-                        max: 1,
+                        min: this.gateYMin,
+                        max: this.gateYMax,
                         title: {
                             display: true,
                             text: 'Gate Value'
@@ -258,19 +266,6 @@ class PlotManager {
             this.voltageChart.options.scales.x.max = newMax;
             this.gateKineticsChart.options.scales.x.min = newMin;
             this.gateKineticsChart.options.scales.x.max = newMax;
-        }
-
-        // Auto-adjust voltage y-axis if data extends beyond current view
-        const voltages = data.voltage;
-        if (voltages.length > 0) {
-            const minV = Math.min(...voltages);
-            const maxV = Math.max(...voltages);
-            if (minV < this.voltageChart.options.scales.y.min) {
-                this.voltageChart.options.scales.y.min = Math.floor(minV / 20) * 20;
-            }
-            if (maxV > this.voltageChart.options.scales.y.max) {
-                this.voltageChart.options.scales.y.max = Math.ceil(maxV / 20) * 20;
-            }
         }
 
         // Keep data buffer at reasonable size
