@@ -33,15 +33,14 @@ class PlotManager {
                         label: 'Membrane Potential (mV)',
                         data: [],
                         borderColor: 'rgb(255, 0, 0)', // Red for membrane voltage
-                        tension: 0.1,
-                        yAxisID: 'y'
+                        tension: 0.1
                     },
                     {
                         label: 'Stimulus Current (μA/cm²)',
                         data: [],
                         borderColor: 'rgb(128, 0, 255)', // Purple for stimulus
                         tension: 0.1,
-                        yAxisID: 'y'
+                        yAxisID: 'stimulus'
                     }
                 ]
             },
@@ -52,6 +51,7 @@ class PlotManager {
                 scales: {
                     x: {
                         type: 'linear',
+                        bounds: 'data',
                         min: this.defaultXMin,
                         max: this.defaultXMax,
                         title: {
@@ -60,11 +60,27 @@ class PlotManager {
                         }
                     },
                     y: {
+                        type: 'linear',
+                        bounds: 'data',
                         min: this.defaultYMin,
                         max: this.defaultYMax,
                         title: {
                             display: true,
                             text: 'Membrane Potential (mV)'
+                        }
+                    },
+                    stimulus: {
+                        type: 'linear',
+                        bounds: 'data',
+                        position: 'right',
+                        min: -20,
+                        max: 20,
+                        title: {
+                            display: true,
+                            text: 'Current (μA/cm²)'
+                        },
+                        grid: {
+                            drawOnChartArea: false
                         }
                     }
                 },
@@ -111,6 +127,7 @@ class PlotManager {
                 scales: {
                     x: {
                         type: 'linear',
+                        bounds: 'data',
                         min: this.defaultXMin,
                         max: this.defaultXMax,
                         title: {
@@ -119,6 +136,8 @@ class PlotManager {
                         }
                     },
                     y: {
+                        type: 'linear',
+                        bounds: 'data',
                         min: 0,
                         max: 1,
                         title: {
@@ -167,6 +186,21 @@ class PlotManager {
             this.gateChart.data.datasets[0].data = [];
             this.gateChart.data.datasets[1].data = [];
             this.gateChart.data.datasets[2].data = [];
+        }
+
+        // Get the latest time point
+        const lastTime = data.time[data.time.length - 1] || 0;
+
+        // Check if we need to slide the window
+        if (lastTime > this.voltageChart.options.scales.x.max) {
+            const slideDistance = this.slideAmount;
+            const newMin = Math.max(0, lastTime - this.windowSize);
+            const newMax = lastTime;
+            
+            this.voltageChart.options.scales.x.min = newMin;
+            this.voltageChart.options.scales.x.max = newMax;
+            this.gateChart.options.scales.x.min = newMin;
+            this.gateChart.options.scales.x.max = newMax;
         }
 
         // Update voltage and stimulus data
