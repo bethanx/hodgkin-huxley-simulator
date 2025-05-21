@@ -134,13 +134,13 @@ class Simulator {
                     
                     if (this.model.time >= this.endTime) {
                         this.stop();
-                        if (this.onUpdate) this.onUpdate(this.dataBuffer);
+                        if (this.onUpdate) this.onUpdate(this.dataBuffer, false); // Explicitly pass false for non-reset updates
                         return;
                     }
                 }
                 
                 accumulatedTime -= targetFrameTime;
-                if (this.onUpdate) this.onUpdate(this.dataBuffer);
+                if (this.onUpdate) this.onUpdate(this.dataBuffer, false); // Explicitly pass false for non-reset updates
             }
             
             lastUpdateTime = currentTime;
@@ -220,7 +220,8 @@ class Simulator {
             iL: 0
         });
         
-        if (this.onUpdate) this.onUpdate(this.dataBuffer, true); // Pass true to indicate this is a reset
+        // Pass true as second argument to indicate this is a reset
+        if (this.onUpdate) this.onUpdate(this.dataBuffer, true);
     }
 
     // Clear history but keep current state

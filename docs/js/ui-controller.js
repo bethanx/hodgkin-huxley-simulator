@@ -8,7 +8,7 @@ class UIController {
         this.activeTab = 'membrane';
         
         // Bind simulator update callback
-        this.simulator.onUpdate = (data) => this.plotManager.updatePlot(data);
+        this.simulator.onUpdate = (data, isReset) => this.plotManager.updatePlot(data, isReset);
     }
 
     // Initialize the UI
