@@ -74,47 +74,68 @@ class PlotManager {
     resetView() {
         if (!this.chart || !this.canvasId) return;
 
-        // Reset all data
-        this.chart.data.labels = [];
-        this.chart.data.datasets[0].data = [];
+        console.log('Destroying old chart...');
+        // Destroy and remove the old chart completely
+        this.chart.destroy();
         
-        // Force axis reset by explicitly setting options
-        this.chart.options = {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: false,
-            scales: {
-                x: {
-                    type: 'linear',
-                    min: this.defaultXMin,
-                    max: this.defaultXMax,
-                    title: {
-                        display: true,
-                        text: 'Time (ms)'
+        console.log('Creating new chart...');
+        // Get a fresh context
+        const canvas = document.getElementById(this.canvasId);
+        const ctx = canvas.getContext('2d');
+        
+        // Clear any remaining pixels
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Create a completely new chart instance
+        this.chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Membrane Potential (mV)',
+                        data: [],
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1,
+                        yAxisID: 'y'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                scales: {
+                    x: {
+                        type: 'linear',
+                        min: this.defaultXMin,
+                        max: this.defaultXMax,
+                        title: {
+                            display: true,
+                            text: 'Time (ms)'
+                        }
+                    },
+                    y: {
+                        min: this.defaultYMin,
+                        max: this.defaultYMax,
+                        title: {
+                            display: true,
+                            text: 'Membrane Potential (mV)'
+                        }
                     }
                 },
-                y: {
-                    min: this.defaultYMin,
-                    max: this.defaultYMax,
-                    title: {
+                plugins: {
+                    legend: {
                         display: true,
-                        text: 'Membrane Potential (mV)'
+                        position: 'top'
                     }
                 }
-            },
-            plugins: {
-                legend: {
-                    display: true,
-                    position: 'top'
-                }
             }
-        };
+        });
 
         // Reset internal state
         this.updateCount = 0;
-
-        // Force a complete redraw
-        this.chart.update('none');
+        console.log('Chart reset complete. Axis range:', this.defaultXMin, 'to', this.defaultXMax);
     }
 
     // Update the plot with new data
@@ -123,6 +144,7 @@ class PlotManager {
 
         // If this is a reset, force window back to default position
         if (isReset) {
+            console.log('Handling reset in updatePlot...');
             this.resetView();
             return;
         }
@@ -145,9 +167,13 @@ class PlotManager {
 
             // If we're beyond the current window
             if (lastTime > currentMax) {
-                // Calculate new window position
-                const newMin = Math.floor(lastTime / this.slideAmount) * this.slideAmount;
+                // Calculate new window position based on slideAmount (10ms)
+                const slidesToAdd = Math.floor((lastTime - currentMax) / this.slideAmount) + 1;
+                const slideDistance = this.slideAmount * slidesToAdd;
+                const newMin = currentMin + slideDistance;
                 const newMax = newMin + this.windowSize;
+                
+                console.log('Sliding window:', newMin, 'to', newMax);
                 
                 // Update the window position
                 this.chart.options.scales.x.min = newMin;
