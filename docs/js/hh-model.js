@@ -89,8 +89,7 @@ class HHModel {
             n: this.n,
             iNa: iNa * 1000, // Convert to μA/cm²
             iK: iK * 1000,   // Convert to μA/cm²
-            iL: iL * 1000,   // Convert to μA/cm²
-            iStim: iStim     // Include stimulus current
+            iL: iL * 1000    // Convert to μA/cm²
         };
     }
 
