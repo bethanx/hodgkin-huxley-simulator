@@ -1,6 +1,7 @@
 class PlotManager {
     constructor() {
         this.chart = null;
+        this.canvasId = null;  // Store canvas ID for reinitialization
         this.varList = [
             'm', 'h', 'n',
             'I_Na (uA)', 'I_K (uA)', 'g_Na (uS)',
@@ -20,6 +21,7 @@ class PlotManager {
 
     // Initialize the main voltage plot
     initMainPlot(canvasId) {
+        this.canvasId = canvasId;  // Store canvas ID
         const ctx = document.getElementById(canvasId).getContext('2d');
         this.chart = new Chart(ctx, {
             type: 'line',
@@ -134,13 +136,18 @@ class PlotManager {
 
     // Reset plot to default view
     resetView() {
-        if (!this.chart) return;
-        
-        // Destroy existing chart
+        if (!this.chart || !this.canvasId) return;
+
+        // Destroy the existing chart
         this.chart.destroy();
-        
-        // Reinitialize the chart
-        const ctx = this.chart.ctx;
+        this.chart = null;
+
+        // Clear the canvas completely
+        const canvas = document.getElementById(this.canvasId);
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Create a completely new chart
         this.chart = new Chart(ctx, {
             type: 'line',
             data: {
@@ -186,7 +193,7 @@ class PlotManager {
                 }
             }
         });
-        
+
         // Reset internal state
         this.updateCount = 0;
     }
