@@ -72,8 +72,7 @@ class PlotManager {
                         },
                         ticks: {
                             stepSize: 10
-                        },
-                        bounds: 'data'
+                        }
                     },
                     y: {
                         type: 'linear',
@@ -86,8 +85,11 @@ class PlotManager {
                         ticks: {
                             stepSize: 20
                         },
-                        bounds: 'data',
-                        beginAtZero: false
+                        grace: '5%',
+                        beginAtZero: false,
+                        adapative: false,
+                        suggestedMin: this.voltageYMin,
+                        suggestedMax: this.voltageYMax
                     },
                     y2: {
                         type: 'linear',
@@ -101,8 +103,11 @@ class PlotManager {
                         grid: {
                             drawOnChartArea: false
                         },
-                        bounds: 'data',
-                        beginAtZero: false
+                        grace: '5%',
+                        beginAtZero: false,
+                        adapative: false,
+                        suggestedMin: this.stimulusYMin,
+                        suggestedMax: this.stimulusYMax
                     }
                 },
                 plugins: {
@@ -156,8 +161,7 @@ class PlotManager {
                         },
                         ticks: {
                             stepSize: 10
-                        },
-                        bounds: 'data'
+                        }
                     },
                     y: {
                         type: 'linear',
@@ -170,8 +174,11 @@ class PlotManager {
                         ticks: {
                             stepSize: 0.2
                         },
-                        bounds: 'data',
-                        beginAtZero: true
+                        grace: '5%',
+                        beginAtZero: true,
+                        adapative: false,
+                        suggestedMin: this.gateYMin,
+                        suggestedMax: this.gateYMax
                     }
                 },
                 plugins: {
@@ -313,8 +320,11 @@ class PlotManager {
             ticks: {
                 stepSize: 20
             },
-            bounds: 'data',
-            beginAtZero: false
+            grace: '5%',
+            beginAtZero: false,
+            adapative: false,
+            suggestedMin: this.voltageYMin,
+            suggestedMax: this.voltageYMax
         };
 
         this.voltageChart.options.scales.y2 = {
@@ -329,8 +339,11 @@ class PlotManager {
             grid: {
                 drawOnChartArea: false
             },
-            bounds: 'data',
-            beginAtZero: false
+            grace: '5%',
+            beginAtZero: false,
+            adapative: false,
+            suggestedMin: this.stimulusYMin,
+            suggestedMax: this.stimulusYMax
         };
 
         this.gateKineticsChart.options.scales.y = {
@@ -344,14 +357,18 @@ class PlotManager {
             ticks: {
                 stepSize: 0.2
             },
-            bounds: 'data',
-            beginAtZero: true
+            grace: '5%',
+            beginAtZero: true,
+            adapative: false,
+            suggestedMin: this.gateYMin,
+            suggestedMax: this.gateYMax
         };
 
         // Update both charts with animation disabled and immediate mode
         this.voltageChart.options.animation = false;
         this.gateKineticsChart.options.animation = false;
         
+        // Force a complete redraw
         this.voltageChart.update('none');
         this.gateKineticsChart.update('none');
     }
