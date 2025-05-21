@@ -76,18 +76,20 @@ class PlotManager {
 
         console.log('Starting chart reset...');
         
-        // First destroy the old chart and remove it from Chart.js registry
-        const chartId = this.chart.id;
+        // First destroy the old chart
         this.chart.destroy();
-        delete Chart.instances[chartId];
         
         // Remove the old canvas and create a new one
         const oldCanvas = document.getElementById(this.canvasId);
         const parent = oldCanvas.parentNode;
+        const width = oldCanvas.width;
+        const height = oldCanvas.height;
         oldCanvas.remove();
         
         const newCanvas = document.createElement('canvas');
         newCanvas.id = this.canvasId;
+        newCanvas.width = width;
+        newCanvas.height = height;
         parent.appendChild(newCanvas);
         
         console.log('Creating new chart with range:', this.defaultXMin, '-', this.defaultXMax);
@@ -115,14 +117,20 @@ class PlotManager {
                 scales: {
                     x: {
                         type: 'linear',
+                        bounds: 'data',
                         min: this.defaultXMin,
                         max: this.defaultXMax,
+                        ticks: {
+                            stepSize: 10
+                        },
                         title: {
                             display: true,
                             text: 'Time (ms)'
                         }
                     },
                     y: {
+                        type: 'linear',
+                        bounds: 'data',
                         min: this.defaultYMin,
                         max: this.defaultYMax,
                         title: {

@@ -37,7 +37,9 @@ class UIController {
         
         // Control buttons
         document.getElementById('resetBtn').addEventListener('click', () => {
+            console.log('Reset button clicked');
             this.simulator.reset();
+            this.plotManager.resetView(); // Directly call plot manager reset
             this.updateAllInputs();
         });
         
