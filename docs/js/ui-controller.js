@@ -37,10 +37,19 @@ class UIController {
         
         // Control buttons
         document.getElementById('resetBtn').addEventListener('click', () => {
-            console.log('Reset button clicked');
+            console.log('Reset button clicked - starting reset sequence');
+            
+            // First reset the simulator to get clean initial state
             this.simulator.reset();
-            this.plotManager.resetView(); // Directly call plot manager reset
+            
+            // Then reset the plot view to ensure proper axis ranges
+            console.log('Resetting plot view');
+            this.plotManager.resetView();
+            
+            // Update all UI inputs to match reset state
             this.updateAllInputs();
+            
+            console.log('Reset sequence complete');
         });
         
         document.getElementById('clearBtn').addEventListener('click', () => {

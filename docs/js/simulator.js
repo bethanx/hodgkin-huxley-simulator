@@ -191,26 +191,31 @@ class Simulator {
 
     // Reset simulation
     reset() {
+        console.log('Starting simulator reset...');
+        
+        // Stop any ongoing simulation
         this.stop();
+        
+        // Reset the model to initial conditions
         this.model.reset();
         this.endTime = 0;
         
-        // Clear data buffers
+        // Clear all data buffers
         this.dataBuffer = {
-            time: [],
-            voltage: [],
-            iNa: [],
-            iK: [],
-            iL: [],
+            time: [0],  // Start with initial time point
+            voltage: [this.model.V],  // Start with initial voltage
+            iNa: [0],
+            iK: [0],
+            iL: [0],
             gating: {
-                m: [],
-                h: [],
-                n: []
+                m: [this.model.m],
+                h: [this.model.h],
+                n: [this.model.n]
             }
         };
         
         // Store initial state
-        this.storeData(this.model.time, {
+        this.storeData(0, {
             V: this.model.V,
             m: this.model.m,
             h: this.model.h,
@@ -220,8 +225,16 @@ class Simulator {
             iL: 0
         });
         
-        // Pass true as second argument to indicate this is a reset
-        if (this.onUpdate) this.onUpdate(this.dataBuffer, true);
+        console.log('Simulator reset complete with initial state:', {
+            time: this.dataBuffer.time[0],
+            voltage: this.dataBuffer.voltage[0]
+        });
+        
+        // Notify plot manager with reset flag
+        if (this.onUpdate) {
+            console.log('Notifying plot manager of reset');
+            this.onUpdate(this.dataBuffer, true);
+        }
     }
 
     // Clear history but keep current state

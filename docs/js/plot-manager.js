@@ -14,7 +14,7 @@ class PlotManager {
         this.defaultXMax = 50;
         this.windowSize = 50;
         this.slideAmount = 10;
-        this.bufferSize = 500;  // Similar to MATLAB's nbins
+        this.bufferSize = 5000;  // Similar to MATLAB's nbins
         this.updateCount = 0;   // Track updates for throttling
         this.updateThreshold = 4; // Update every N points (like MATLAB's cachesize)
     }
@@ -76,16 +76,20 @@ class PlotManager {
 
         console.log('Starting chart reset...');
         
-        // First destroy the old chart
-        this.chart.destroy();
-        
-        // Remove the old canvas and create a new one
+        // Store the canvas parent before destroying
         const oldCanvas = document.getElementById(this.canvasId);
         const parent = oldCanvas.parentNode;
         const width = oldCanvas.width;
         const height = oldCanvas.height;
+        
+        // Destroy the old chart and remove event listeners
+        this.chart.destroy();
+        this.chart = null;
+        
+        // Remove the old canvas
         oldCanvas.remove();
         
+        // Create a fresh canvas
         const newCanvas = document.createElement('canvas');
         newCanvas.id = this.canvasId;
         newCanvas.width = width;
@@ -94,7 +98,7 @@ class PlotManager {
         
         console.log('Creating new chart with range:', this.defaultXMin, '-', this.defaultXMax);
         
-        // Create a completely new chart on the new canvas
+        // Create a completely new chart with explicit default settings
         const ctx = newCanvas.getContext('2d');
         this.chart = new Chart(ctx, {
             type: 'line',
@@ -148,9 +152,16 @@ class PlotManager {
             }
         });
 
-        // Reset internal state
+        // Reset all internal state
         this.updateCount = 0;
-        console.log('Chart reset complete');
+        
+        // Force an immediate update
+        this.chart.update('none');
+        
+        console.log('Chart reset complete with axis ranges:', {
+            x: [this.defaultXMin, this.defaultXMax],
+            y: [this.defaultYMin, this.defaultYMax]
+        });
     }
 
     // Update the plot with new data
