@@ -4,6 +4,7 @@ class Simulator {
     constructor() {
         this.model = new HHModel();
         this.running = false;
+        this.animationFrameId = null;
         this.dataBuffer = {
             time: [],
             voltage: [],
@@ -41,6 +42,17 @@ class Simulator {
             iK: 0,
             iL: 0
         });
+    }
+
+    // Stop the simulation
+    stop() {
+        if (this.animationFrameId) {
+            cancelAnimationFrame(this.animationFrameId);
+            this.animationFrameId = null;
+        }
+        this.running = false;
+        this.stim1.active = false;
+        this.stim2.active = false;
     }
 
     // Calculate total stimulus current at a given time
@@ -99,14 +111,20 @@ class Simulator {
         const endTime = this.model.time + duration;
         let lastUpdateTime = performance.now();
         const targetFrameTime = 1000 / 60; // Target 60 FPS
+        let accumulatedTime = 0;
+        const maxTimeStep = 0.1; // Maximum time step in ms
         
         const simulate = (currentTime) => {
-            const deltaTime = currentTime - lastUpdateTime;
+            if (!this.running) return;
+
+            const deltaTime = Math.min(currentTime - lastUpdateTime, 50); // Cap at 50ms to prevent huge jumps
+            accumulatedTime += deltaTime;
             
             // Only update if enough time has passed
-            if (deltaTime >= targetFrameTime) {
+            while (accumulatedTime >= targetFrameTime) {
                 // Run multiple steps per frame for efficiency
-                const numSteps = Math.min(10, Math.floor(deltaTime / targetFrameTime));
+                const numSteps = Math.min(10, Math.floor(targetFrameTime / maxTimeStep));
+                const dt = targetFrameTime / numSteps;
                 
                 for (let i = 0; i < numSteps; i++) {
                     const iStim = this.calculateStimulusCurrent(this.model.time);
@@ -114,28 +132,26 @@ class Simulator {
                     this.storeData(this.model.time, data);
                     
                     if (this.model.time >= endTime) {
-                        this.running = false;
-                        this.stim1.active = false;
-                        this.stim2.active = false;
+                        this.stop();
                         if (this.onUpdate) this.onUpdate(this.dataBuffer);
                         return;
                     }
                 }
                 
-                lastUpdateTime = currentTime;
+                accumulatedTime -= targetFrameTime;
                 if (this.onUpdate) this.onUpdate(this.dataBuffer);
             }
             
+            lastUpdateTime = currentTime;
+            
             if (this.model.time < endTime) {
-                requestAnimationFrame(simulate);
+                this.animationFrameId = requestAnimationFrame(simulate);
             } else {
-                this.running = false;
-                this.stim1.active = false;
-                this.stim2.active = false;
+                this.stop();
             }
         };
         
-        requestAnimationFrame(simulate);
+        this.animationFrameId = requestAnimationFrame(simulate);
     }
 
     // Apply stimulus 1
@@ -158,10 +174,8 @@ class Simulator {
 
     // Reset simulation
     reset() {
+        this.stop();
         this.model.reset();
-        this.running = false;
-        this.stim1.active = false;
-        this.stim2.active = false;
         
         // Clear data buffers
         this.dataBuffer.time = [];
