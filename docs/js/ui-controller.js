@@ -131,39 +131,50 @@ class UIController {
         this.simulator.updateParameters(params);
     }
 
-    // Handle parameter changes from the UI
-    handleParameterChange() {
-        this.loadInitialParameters();
-    }
-
     // Update all input elements to match model state
     updateAllInputs() {
+        // Set flag to prevent parameter updates while we update inputs
+        this._updatingInputs = true;
+        
         const model = this.simulator.model;
         
-        // Update membrane properties
-        document.getElementById('capacitance').value = model.Cm;
-        document.getElementById('restingPotential').value = model.V;
+        try {
+            // Update membrane properties
+            document.getElementById('capacitance').value = model.Cm;
+            document.getElementById('restingPotential').value = model.V;
+            
+            // Update channel properties
+            document.getElementById('gNaMax').value = model.gNaMax;
+            document.getElementById('gKMax').value = model.gKMax;
+            document.getElementById('gL').value = model.gL;
+            document.getElementById('ENa').value = model.ENa;
+            document.getElementById('EK').value = model.EK;
+            document.getElementById('EL').value = model.EL;
+            
+            // Update stimulus properties
+            document.getElementById('stim1Amp').value = this.simulator.stim1.amplitude;
+            document.getElementById('stim1Duration').value = this.simulator.stim1.duration;
+            document.getElementById('stim2Amp').value = this.simulator.stim2.amplitude;
+            document.getElementById('stim2Duration').value = this.simulator.stim2.duration;
+            
+            // Update drug controls
+            document.getElementById('ttxLevel').value = model.ttxBlock * 100;
+            document.getElementById('ttxValue').textContent = `${model.ttxBlock * 100}%`;
+            document.getElementById('teaLevel').value = model.teaBlock * 100;
+            document.getElementById('teaValue').textContent = `${model.teaBlock * 100}%`;
+            document.getElementById('pronaseCheck').checked = model.pronase;
+        } finally {
+            // Always clear the flag, even if an error occurs
+            this._updatingInputs = false;
+        }
+    }
+
+    // Handle parameter changes from the UI
+    handleParameterChange() {
+        // Skip if we're just updating the input values programmatically
+        if (this._updatingInputs) return;
         
-        // Update channel properties
-        document.getElementById('gNaMax').value = model.gNaMax;
-        document.getElementById('gKMax').value = model.gKMax;
-        document.getElementById('gL').value = model.gL;
-        document.getElementById('ENa').value = model.ENa;
-        document.getElementById('EK').value = model.EK;
-        document.getElementById('EL').value = model.EL;
-        
-        // Update stimulus properties
-        document.getElementById('stim1Amp').value = this.simulator.stim1.amplitude;
-        document.getElementById('stim1Duration').value = this.simulator.stim1.duration;
-        document.getElementById('stim2Amp').value = this.simulator.stim2.amplitude;
-        document.getElementById('stim2Duration').value = this.simulator.stim2.duration;
-        
-        // Update drug controls
-        document.getElementById('ttxLevel').value = model.ttxBlock * 100;
-        document.getElementById('ttxValue').textContent = `${model.ttxBlock * 100}%`;
-        document.getElementById('teaLevel').value = model.teaBlock * 100;
-        document.getElementById('teaValue').textContent = `${model.teaBlock * 100}%`;
-        document.getElementById('pronaseCheck').checked = model.pronase;
+        this.loadInitialParameters();
     }
 
     // Clean up resources
