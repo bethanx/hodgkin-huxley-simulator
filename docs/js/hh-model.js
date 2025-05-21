@@ -1,3 +1,5 @@
+import GateKinetics from './gate-kinetics.js';
+
 // Hodgkin-Huxley Model Class
 class HHModel {
     constructor() {
@@ -28,6 +30,9 @@ class HHModel {
         // Time step
         this.dt = 0.01;  // ms
         this.time = 0;   // ms
+
+        // Initialize gates to steady state
+        this.updateSteadyStateGates();
     }
 
     // Reset the model to initial conditions
@@ -40,19 +45,9 @@ class HHModel {
     // Update gate variables to steady state values
     updateSteadyStateGates() {
         const v = this.V / 1000; // Convert to V for calculation
-        
-        // Calculate rate constants
-        const am = this.alphaM(v);
-        const bm = this.betaM(v);
-        const ah = this.alphaH(v);
-        const bh = this.betaH(v);
-        const an = this.alphaN(v);
-        const bn = this.betaN(v);
-        
-        // Update to steady state values
-        this.m = am / (am + bm);
-        this.h = ah / (ah + bh);
-        this.n = an / (an + bn);
+        this.m = GateKinetics.mInf(v);
+        this.h = GateKinetics.hInf(v);
+        this.n = GateKinetics.nInf(v);
     }
 
     // Step the model forward in time
@@ -61,12 +56,12 @@ class HHModel {
         const v = this.V / 1000;
         
         // Calculate rate constants
-        const am = this.alphaM(v);
-        const bm = this.betaM(v);
-        const ah = this.alphaH(v);
-        const bh = this.betaH(v);
-        const an = this.alphaN(v);
-        const bn = this.betaN(v);
+        const am = GateKinetics.alphaM(v);
+        const bm = GateKinetics.betaM(v);
+        const ah = GateKinetics.alphaH(v);
+        const bh = GateKinetics.betaH(v);
+        const an = GateKinetics.alphaN(v);
+        const bn = GateKinetics.betaN(v);
         
         // Update gating variables
         this.m += this.dt * (am * (1 - this.m) - bm * this.m);

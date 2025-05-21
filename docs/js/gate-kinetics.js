@@ -78,13 +78,4 @@ class GateKinetics {
     }
 }
 
-// Add the gate kinetics functions to the HHModel prototype
-Object.getOwnPropertyNames(GateKinetics).forEach(method => {
-    if (method !== 'length' && method !== 'prototype' && method !== 'name') {
-        HHModel.prototype[method] = function(...args) {
-            return GateKinetics[method](...args);
-        };
-    }
-});
-
 export default GateKinetics; 
