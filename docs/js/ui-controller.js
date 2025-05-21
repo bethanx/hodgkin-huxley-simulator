@@ -39,12 +39,8 @@ class UIController {
         document.getElementById('resetBtn').addEventListener('click', () => {
             console.log('Reset button clicked - starting reset sequence');
             
-            // First reset the simulator to get clean initial state
+            // Reset the simulator which will trigger the plot reset through the update callback
             this.simulator.reset();
-            
-            // Then reset the plot view to ensure proper axis ranges
-            console.log('Resetting plot view');
-            this.plotManager.resetView();
             
             // Update all UI inputs to match reset state
             this.updateAllInputs();
