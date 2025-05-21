@@ -74,19 +74,26 @@ class PlotManager {
     resetView() {
         if (!this.chart || !this.canvasId) return;
 
-        console.log('Destroying old chart...');
-        // Destroy and remove the old chart completely
+        console.log('Starting chart reset...');
+        
+        // First destroy the old chart and remove it from Chart.js registry
+        const chartId = this.chart.id;
         this.chart.destroy();
+        delete Chart.instances[chartId];
         
-        console.log('Creating new chart...');
-        // Get a fresh context
-        const canvas = document.getElementById(this.canvasId);
-        const ctx = canvas.getContext('2d');
+        // Remove the old canvas and create a new one
+        const oldCanvas = document.getElementById(this.canvasId);
+        const parent = oldCanvas.parentNode;
+        oldCanvas.remove();
         
-        // Clear any remaining pixels
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const newCanvas = document.createElement('canvas');
+        newCanvas.id = this.canvasId;
+        parent.appendChild(newCanvas);
         
-        // Create a completely new chart instance
+        console.log('Creating new chart with range:', this.defaultXMin, '-', this.defaultXMax);
+        
+        // Create a completely new chart on the new canvas
+        const ctx = newCanvas.getContext('2d');
         this.chart = new Chart(ctx, {
             type: 'line',
             data: {
@@ -135,7 +142,7 @@ class PlotManager {
 
         // Reset internal state
         this.updateCount = 0;
-        console.log('Chart reset complete. Axis range:', this.defaultXMin, 'to', this.defaultXMax);
+        console.log('Chart reset complete');
     }
 
     // Update the plot with new data
@@ -160,25 +167,21 @@ class PlotManager {
         // Get the latest time point
         const lastTime = data.time[data.time.length - 1] || 0;
 
-        // Only update window position every N points
-        this.updateCount++;
-        if (this.updateCount >= this.updateThreshold) {
-            this.updateCount = 0;
-
-            // If we're beyond the current window
-            if (lastTime > currentMax) {
-                // Calculate new window position based on slideAmount (10ms)
-                const slidesToAdd = Math.floor((lastTime - currentMax) / this.slideAmount) + 1;
-                const slideDistance = this.slideAmount * slidesToAdd;
-                const newMin = currentMin + slideDistance;
-                const newMax = newMin + this.windowSize;
-                
-                console.log('Sliding window:', newMin, 'to', newMax);
-                
-                // Update the window position
-                this.chart.options.scales.x.min = newMin;
-                this.chart.options.scales.x.max = newMax;
-            }
+        // Check if we need to slide the window
+        if (lastTime > currentMax) {
+            // Calculate how many 10ms increments we need to slide
+            const timeOverflow = lastTime - currentMax;
+            const slidesNeeded = Math.ceil(timeOverflow / this.slideAmount);
+            const slideDistance = this.slideAmount;
+            
+            // Update window position by exactly 10ms
+            const newMin = currentMin + slideDistance;
+            const newMax = currentMin + this.windowSize + slideDistance;
+            
+            console.log(`Sliding window by ${slideDistance}ms:`, newMin, 'to', newMax);
+            
+            this.chart.options.scales.x.min = newMin;
+            this.chart.options.scales.x.max = newMax;
         }
 
         // Auto-adjust y-axis if data extends beyond current view
