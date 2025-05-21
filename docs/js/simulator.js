@@ -105,10 +105,11 @@ class Simulator {
 
     // Run simulation for a specified duration
     runFor(duration) {
-        if (this.running) return;
-        this.running = true;
+        if (!this.running) {
+            this.running = true;
+            this.endTime = this.model.time + duration;
+        }
         
-        const endTime = this.model.time + duration;
         let lastUpdateTime = performance.now();
         const targetFrameTime = 1000 / 60; // Target 60 FPS
         let accumulatedTime = 0;
@@ -131,7 +132,7 @@ class Simulator {
                     const data = this.model.step(iStim);
                     this.storeData(this.model.time, data);
                     
-                    if (this.model.time >= endTime) {
+                    if (this.model.time >= this.endTime) {
                         this.stop();
                         if (this.onUpdate) this.onUpdate(this.dataBuffer);
                         return;
@@ -144,7 +145,7 @@ class Simulator {
             
             lastUpdateTime = currentTime;
             
-            if (this.model.time < endTime) {
+            if (this.model.time < this.endTime) {
                 this.animationFrameId = requestAnimationFrame(simulate);
             } else {
                 this.stop();
@@ -158,8 +159,16 @@ class Simulator {
     applyStim1() {
         this.stim1.active = true;
         this.stim1.startTime = this.model.time;
+        
+        // Start simulation if not running
         if (!this.running) {
-            this.runFor(50); // Run for 50ms after stimulus
+            this.runFor(50);
+        } else {
+            // Extend simulation time if running
+            const endTime = this.model.time + 50;
+            if (endTime > this.endTime) {
+                this.endTime = endTime;
+            }
         }
     }
 
@@ -167,8 +176,16 @@ class Simulator {
     applyStim2() {
         this.stim2.active = true;
         this.stim2.startTime = this.model.time;
+        
+        // Start simulation if not running
         if (!this.running) {
-            this.runFor(50); // Run for 50ms after stimulus
+            this.runFor(50);
+        } else {
+            // Extend simulation time if running
+            const endTime = this.model.time + 50;
+            if (endTime > this.endTime) {
+                this.endTime = endTime;
+            }
         }
     }
 

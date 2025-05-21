@@ -13,7 +13,9 @@ class PlotManager {
         this.defaultXMax = 50;
         this.windowSize = 50;
         this.slideAmount = 10;
-        this.lastSlideTime = 0; // Track when we last slid the window
+        this.bufferSize = 500;  // Similar to MATLAB's nbins
+        this.updateCount = 0;   // Track updates for throttling
+        this.updateThreshold = 4; // Update every N points (like MATLAB's cachesize)
     }
 
     // Initialize the main voltage plot
@@ -79,20 +81,23 @@ class PlotManager {
         const currentMin = this.chart.options.scales.x.min;
         const currentMax = this.chart.options.scales.x.max;
         
-        // Check if we need to slide the window
+        // Get the latest time point
         const lastTime = data.time[data.time.length - 1] || 0;
-        
-        // If we've moved beyond our current window
-        if (lastTime > currentMax) {
-            // Calculate the new window position based on slideAmount increments
-            const slidesToAdd = Math.floor((lastTime - this.lastSlideTime) / this.slideAmount);
-            if (slidesToAdd > 0) {
-                const newMin = this.lastSlideTime + this.slideAmount;
+
+        // Only update window position every N points
+        this.updateCount++;
+        if (this.updateCount >= this.updateThreshold) {
+            this.updateCount = 0;
+
+            // If we're beyond the current window
+            if (lastTime > currentMax) {
+                // Calculate new window position
+                const newMin = Math.floor(lastTime / this.slideAmount) * this.slideAmount;
                 const newMax = newMin + this.windowSize;
                 
+                // Update the window position
                 this.chart.options.scales.x.min = newMin;
                 this.chart.options.scales.x.max = newMax;
-                this.lastSlideTime = newMin;
             }
         }
 
@@ -109,6 +114,13 @@ class PlotManager {
             }
         }
 
+        // Keep data buffer at reasonable size
+        if (data.time.length > this.bufferSize) {
+            const excess = data.time.length - this.bufferSize;
+            this.chart.data.labels = data.time.slice(excess);
+            this.chart.data.datasets[0].data = data.voltage.slice(excess);
+        }
+
         this.chart.update('none');
     }
 
@@ -120,7 +132,7 @@ class PlotManager {
         this.chart.options.scales.x.max = this.defaultXMax;
         this.chart.options.scales.y.min = this.defaultYMin;
         this.chart.options.scales.y.max = this.defaultYMax;
-        this.lastSlideTime = 0; // Reset the slide tracking
+        this.updateCount = 0;
         this.chart.update('none');
     }
 
