@@ -21,7 +21,6 @@ class PlotManager {
     // Initialize the main voltage plot
     initMainPlot(canvasId) {
         const ctx = document.getElementById(canvasId).getContext('2d');
-        
         this.chart = new Chart(ctx, {
             type: 'line',
             data: {
@@ -137,12 +136,59 @@ class PlotManager {
     resetView() {
         if (!this.chart) return;
         
-        this.chart.options.scales.x.min = this.defaultXMin;
-        this.chart.options.scales.x.max = this.defaultXMax;
-        this.chart.options.scales.y.min = this.defaultYMin;
-        this.chart.options.scales.y.max = this.defaultYMax;
+        // Destroy existing chart
+        this.chart.destroy();
+        
+        // Reinitialize the chart
+        const ctx = this.chart.ctx;
+        this.chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Membrane Potential (mV)',
+                        data: [],
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1,
+                        yAxisID: 'y'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                scales: {
+                    x: {
+                        type: 'linear',
+                        min: this.defaultXMin,
+                        max: this.defaultXMax,
+                        title: {
+                            display: true,
+                            text: 'Time (ms)'
+                        }
+                    },
+                    y: {
+                        min: this.defaultYMin,
+                        max: this.defaultYMax,
+                        title: {
+                            display: true,
+                            text: 'Membrane Potential (mV)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    }
+                }
+            }
+        });
+        
+        // Reset internal state
         this.updateCount = 0;
-        this.chart.update('none');
     }
 
     // Set the x-axis limits
