@@ -30,6 +30,17 @@ class Simulator {
             active: false,
             startTime: 0     // ms
         };
+        
+        // Store initial state
+        this.storeData(this.model.time, {
+            V: this.model.V,
+            m: this.model.m,
+            h: this.model.h,
+            n: this.model.n,
+            iNa: 0,
+            iK: 0,
+            iL: 0
+        });
     }
 
     // Calculate total stimulus current at a given time
@@ -86,24 +97,34 @@ class Simulator {
         this.running = true;
         
         const endTime = this.model.time + duration;
+        let lastUpdateTime = performance.now();
+        const targetFrameTime = 1000 / 60; // Target 60 FPS
         
-        const simulate = () => {
-            // Run multiple steps per frame for efficiency
-            for (let i = 0; i < 10; i++) {
-                const iStim = this.calculateStimulusCurrent(this.model.time);
-                const data = this.model.step(iStim);
-                this.storeData(this.model.time, data);
-                
-                if (this.model.time >= endTime) {
-                    this.running = false;
-                    this.stim1.active = false;
-                    this.stim2.active = false;
-                    if (this.onUpdate) this.onUpdate(this.dataBuffer);
-                    return;
-                }
-            }
+        const simulate = (currentTime) => {
+            const deltaTime = currentTime - lastUpdateTime;
             
-            if (this.onUpdate) this.onUpdate(this.dataBuffer);
+            // Only update if enough time has passed
+            if (deltaTime >= targetFrameTime) {
+                // Run multiple steps per frame for efficiency
+                const numSteps = Math.min(10, Math.floor(deltaTime / targetFrameTime));
+                
+                for (let i = 0; i < numSteps; i++) {
+                    const iStim = this.calculateStimulusCurrent(this.model.time);
+                    const data = this.model.step(iStim);
+                    this.storeData(this.model.time, data);
+                    
+                    if (this.model.time >= endTime) {
+                        this.running = false;
+                        this.stim1.active = false;
+                        this.stim2.active = false;
+                        if (this.onUpdate) this.onUpdate(this.dataBuffer);
+                        return;
+                    }
+                }
+                
+                lastUpdateTime = currentTime;
+                if (this.onUpdate) this.onUpdate(this.dataBuffer);
+            }
             
             if (this.model.time < endTime) {
                 requestAnimationFrame(simulate);
@@ -114,21 +135,25 @@ class Simulator {
             }
         };
         
-        simulate();
+        requestAnimationFrame(simulate);
     }
 
     // Apply stimulus 1
     applyStim1() {
-        this.stim1.active = true;
-        this.stim1.startTime = this.model.time;
-        this.runFor(50); // Run for 50ms after stimulus
+        if (!this.running) {
+            this.stim1.active = true;
+            this.stim1.startTime = this.model.time;
+            this.runFor(50); // Run for 50ms after stimulus
+        }
     }
 
     // Apply stimulus 2
     applyStim2() {
-        this.stim2.active = true;
-        this.stim2.startTime = this.model.time;
-        this.runFor(50); // Run for 50ms after stimulus
+        if (!this.running) {
+            this.stim2.active = true;
+            this.stim2.startTime = this.model.time;
+            this.runFor(50); // Run for 50ms after stimulus
+        }
     }
 
     // Reset simulation
@@ -137,6 +162,8 @@ class Simulator {
         this.running = false;
         this.stim1.active = false;
         this.stim2.active = false;
+        
+        // Clear data buffers
         this.dataBuffer.time = [];
         this.dataBuffer.voltage = [];
         this.dataBuffer.iNa = [];
@@ -145,6 +172,18 @@ class Simulator {
         this.dataBuffer.gating.m = [];
         this.dataBuffer.gating.h = [];
         this.dataBuffer.gating.n = [];
+        
+        // Store initial state
+        this.storeData(this.model.time, {
+            V: this.model.V,
+            m: this.model.m,
+            h: this.model.h,
+            n: this.model.n,
+            iNa: 0,
+            iK: 0,
+            iL: 0
+        });
+        
         if (this.onUpdate) this.onUpdate(this.dataBuffer);
     }
 
@@ -153,6 +192,7 @@ class Simulator {
         const currentTime = this.model.time;
         const currentV = this.model.V;
         
+        // Clear data buffers but keep current state
         this.dataBuffer.time = [currentTime];
         this.dataBuffer.voltage = [currentV];
         this.dataBuffer.iNa = [0];

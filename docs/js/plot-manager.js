@@ -7,6 +7,10 @@ class PlotManager {
             'g_K (uS)', 'I_leak (uA)', 'blank'
         ];
         this.selectedVars = ['m', 'h', 'n'];
+        this.defaultYMin = -100;
+        this.defaultYMax = 60;
+        this.defaultXMin = 0;
+        this.defaultXMax = 50;
     }
 
     // Initialize the main voltage plot
@@ -28,20 +32,32 @@ class PlotManager {
                 ]
             },
             options: {
+                responsive: true,
+                maintainAspectRatio: false,
                 animation: false,
                 scales: {
                     x: {
                         type: 'linear',
+                        min: this.defaultXMin,
+                        max: this.defaultXMax,
                         title: {
                             display: true,
                             text: 'Time (ms)'
                         }
                     },
                     y: {
+                        min: this.defaultYMin,
+                        max: this.defaultYMax,
                         title: {
                             display: true,
                             text: 'Membrane Potential (mV)'
                         }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
                     }
                 }
             }
@@ -52,45 +68,41 @@ class PlotManager {
     updatePlot(data) {
         if (!this.chart) return;
 
+        // Update data
         this.chart.data.labels = data.time;
         this.chart.data.datasets[0].data = data.voltage;
+
+        // Auto-adjust x-axis if data extends beyond current view
+        const lastTime = data.time[data.time.length - 1] || 0;
+        if (lastTime > this.chart.options.scales.x.max) {
+            this.chart.options.scales.x.max = Math.ceil(lastTime / 50) * 50;
+        }
+
+        // Auto-adjust y-axis if data extends beyond current view
+        const voltages = data.voltage;
+        if (voltages.length > 0) {
+            const minV = Math.min(...voltages);
+            const maxV = Math.max(...voltages);
+            if (minV < this.chart.options.scales.y.min) {
+                this.chart.options.scales.y.min = Math.floor(minV / 20) * 20;
+            }
+            if (maxV > this.chart.options.scales.y.max) {
+                this.chart.options.scales.y.max = Math.ceil(maxV / 20) * 20;
+            }
+        }
+
         this.chart.update('none'); // 'none' for no animation to improve performance
     }
 
-    // Change the variables being plotted in the lower panel
-    changeVariables(varIndices) {
-        this.selectedVars = varIndices.map(i => this.varList[i]);
-        // Implementation for changing plotted variables would go here
-    }
-
-    // Get the value for a specific variable from the simulation data
-    getVarValue(varName, data) {
-        switch(varName) {
-            case 'm':
-                return data.gating.m;
-            case 'h':
-                return data.gating.h;
-            case 'n':
-                return data.gating.n;
-            case 'I_Na (uA)':
-                return data.iNa;
-            case 'I_K (uA)':
-                return data.iK;
-            case 'I_leak (uA)':
-                return data.iL;
-            case 'g_Na (uS)':
-                // Calculate Na conductance
-                return data.gating.m.map((m, i) => 
-                    120 * Math.pow(m, 3) * data.gating.h[i]
-                );
-            case 'g_K (uS)':
-                // Calculate K conductance
-                return data.gating.n.map(n => 
-                    36 * Math.pow(n, 4)
-                );
-            default:
-                return Array(data.time.length).fill(0);
-        }
+    // Reset plot to default view
+    resetView() {
+        if (!this.chart) return;
+        
+        this.chart.options.scales.x.min = this.defaultXMin;
+        this.chart.options.scales.x.max = this.defaultXMax;
+        this.chart.options.scales.y.min = this.defaultYMin;
+        this.chart.options.scales.y.max = this.defaultYMax;
+        this.chart.update('none');
     }
 
     // Set the x-axis limits
