@@ -5,6 +5,7 @@ class Simulator {
         this.model = new HHModel();
         this.running = false;
         this.animationFrameId = null;
+        this._isResetting = false;  // Flag to track reset state
         this.dataBuffer = {
             time: [],
             voltage: [],
@@ -193,47 +194,53 @@ class Simulator {
     reset() {
         console.log('Starting simulator reset...');
         
-        // Stop any ongoing simulation
-        this.stop();
+        this._isResetting = true;  // Set reset flag
         
-        // Reset the model to initial conditions
-        this.model.reset();
-        this.endTime = 0;
-        
-        // Clear all data buffers
-        this.dataBuffer = {
-            time: [0],  // Start with initial time point
-            voltage: [this.model.V],  // Start with initial voltage
-            iNa: [0],
-            iK: [0],
-            iL: [0],
-            gating: {
-                m: [this.model.m],
-                h: [this.model.h],
-                n: [this.model.n]
+        try {
+            // Stop any ongoing simulation
+            this.stop();
+            
+            // Reset the model to initial conditions
+            this.model.reset();
+            this.endTime = 0;
+            
+            // Clear all data buffers
+            this.dataBuffer = {
+                time: [0],  // Start with initial time point
+                voltage: [this.model.V],  // Start with initial voltage
+                iNa: [0],
+                iK: [0],
+                iL: [0],
+                gating: {
+                    m: [this.model.m],
+                    h: [this.model.h],
+                    n: [this.model.n]
+                }
+            };
+            
+            // Store initial state
+            this.storeData(0, {
+                V: this.model.V,
+                m: this.model.m,
+                h: this.model.h,
+                n: this.model.n,
+                iNa: 0,
+                iK: 0,
+                iL: 0
+            });
+            
+            console.log('Simulator reset complete with initial state:', {
+                time: this.dataBuffer.time[0],
+                voltage: this.dataBuffer.voltage[0]
+            });
+            
+            // Notify plot manager with reset flag
+            if (this.onUpdate) {
+                console.log('Notifying plot manager of reset');
+                this.onUpdate(this.dataBuffer, true);
             }
-        };
-        
-        // Store initial state
-        this.storeData(0, {
-            V: this.model.V,
-            m: this.model.m,
-            h: this.model.h,
-            n: this.model.n,
-            iNa: 0,
-            iK: 0,
-            iL: 0
-        });
-        
-        console.log('Simulator reset complete with initial state:', {
-            time: this.dataBuffer.time[0],
-            voltage: this.dataBuffer.voltage[0]
-        });
-        
-        // Notify plot manager with reset flag
-        if (this.onUpdate) {
-            console.log('Notifying plot manager of reset');
-            this.onUpdate(this.dataBuffer, true);
+        } finally {
+            this._isResetting = false;  // Always clear reset flag
         }
     }
 
@@ -260,6 +267,11 @@ class Simulator {
         this.model.updateParameters(params);
         if (params.stim1) Object.assign(this.stim1, params.stim1);
         if (params.stim2) Object.assign(this.stim2, params.stim2);
+        
+        // Only notify of updates if we're not in the middle of a reset
+        if (!this._isResetting && this.onUpdate) {
+            this.onUpdate(this.dataBuffer, false);
+        }
     }
 }
 
