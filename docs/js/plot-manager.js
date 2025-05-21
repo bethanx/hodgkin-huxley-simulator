@@ -70,12 +70,21 @@ class PlotManager {
     }
 
     // Update the plot with new data
-    updatePlot(data) {
+    updatePlot(data, isReset = false) {
         if (!this.chart) return;
 
         // Update data
         this.chart.data.labels = data.time;
         this.chart.data.datasets[0].data = data.voltage;
+
+        // If this is a reset, force window back to default position
+        if (isReset) {
+            this.chart.options.scales.x.min = this.defaultXMin;
+            this.chart.options.scales.x.max = this.defaultXMax;
+            this.updateCount = 0;
+            this.chart.update('none');
+            return;
+        }
 
         // Get current window position
         const currentMin = this.chart.options.scales.x.min;

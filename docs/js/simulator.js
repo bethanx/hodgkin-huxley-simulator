@@ -193,16 +193,21 @@ class Simulator {
     reset() {
         this.stop();
         this.model.reset();
+        this.endTime = 0;
         
         // Clear data buffers
-        this.dataBuffer.time = [];
-        this.dataBuffer.voltage = [];
-        this.dataBuffer.iNa = [];
-        this.dataBuffer.iK = [];
-        this.dataBuffer.iL = [];
-        this.dataBuffer.gating.m = [];
-        this.dataBuffer.gating.h = [];
-        this.dataBuffer.gating.n = [];
+        this.dataBuffer = {
+            time: [],
+            voltage: [],
+            iNa: [],
+            iK: [],
+            iL: [],
+            gating: {
+                m: [],
+                h: [],
+                n: []
+            }
+        };
         
         // Store initial state
         this.storeData(this.model.time, {
@@ -215,7 +220,7 @@ class Simulator {
             iL: 0
         });
         
-        if (this.onUpdate) this.onUpdate(this.dataBuffer);
+        if (this.onUpdate) this.onUpdate(this.dataBuffer, true); // Pass true to indicate this is a reset
     }
 
     // Clear history but keep current state
