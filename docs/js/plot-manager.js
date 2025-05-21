@@ -69,21 +69,28 @@ class PlotManager {
                         title: {
                             display: true,
                             text: 'Time (ms)'
+                        },
+                        ticks: {
+                            stepSize: 10
                         }
                     },
                     y: {
-                        min: this.voltageYMin,
-                        max: this.voltageYMax,
+                        type: 'linear',
+                        min: -100,
+                        max: 60,
                         title: {
                             display: true,
                             text: 'Membrane Potential (mV)'
+                        },
+                        ticks: {
+                            stepSize: 20
                         }
                     },
                     y2: {
                         type: 'linear',
                         position: 'right',
-                        min: this.stimulusYMin,
-                        max: this.stimulusYMax,
+                        min: -20,
+                        max: 20,
                         title: {
                             display: true,
                             text: 'Stimulus Current (μA/cm²)'
@@ -141,14 +148,21 @@ class PlotManager {
                         title: {
                             display: true,
                             text: 'Time (ms)'
+                        },
+                        ticks: {
+                            stepSize: 10
                         }
                     },
                     y: {
-                        min: this.gateYMin,
-                        max: this.gateYMax,
+                        type: 'linear',
+                        min: 0,
+                        max: 1,
                         title: {
                             display: true,
                             text: 'Gate Value'
+                        },
+                        ticks: {
+                            stepSize: 0.2
                         }
                     }
                 },
@@ -252,14 +266,9 @@ class PlotManager {
 
         // Check if we need to slide the window
         if (lastTime > currentMax) {
-            const timeOverflow = lastTime - currentMax;
-            const slidesNeeded = Math.ceil(timeOverflow / this.slideAmount);
             const slideDistance = this.slideAmount;
-            
             const newMin = currentMin + slideDistance;
             const newMax = currentMin + this.windowSize + slideDistance;
-            
-            console.log(`Sliding window by ${slideDistance}ms:`, newMin, 'to', newMax);
             
             // Update both plots' x-axis
             this.voltageChart.options.scales.x.min = newMin;
