@@ -13,6 +13,7 @@ class PlotManager {
         this.defaultXMax = 50;
         this.windowSize = 50;
         this.slideAmount = 10;
+        this.lastSlideTime = 0; // Track when we last slid the window
     }
 
     // Initialize the main voltage plot
@@ -80,17 +81,19 @@ class PlotManager {
         
         // Check if we need to slide the window
         const lastTime = data.time[data.time.length - 1] || 0;
+        
+        // If we've moved beyond our current window
         if (lastTime > currentMax) {
-            // Calculate how many slide increments we need
-            const slidesNeeded = Math.floor((lastTime - currentMax) / this.slideAmount) + 1;
-            const slideDistance = this.slideAmount * slidesNeeded;
-            
-            // Update the window position, maintaining the fixed window size
-            const newMin = currentMin + slideDistance;
-            const newMax = newMin + this.windowSize;
-            
-            this.chart.options.scales.x.min = newMin;
-            this.chart.options.scales.x.max = newMax;
+            // Calculate the new window position based on slideAmount increments
+            const slidesToAdd = Math.floor((lastTime - this.lastSlideTime) / this.slideAmount);
+            if (slidesToAdd > 0) {
+                const newMin = this.lastSlideTime + this.slideAmount;
+                const newMax = newMin + this.windowSize;
+                
+                this.chart.options.scales.x.min = newMin;
+                this.chart.options.scales.x.max = newMax;
+                this.lastSlideTime = newMin;
+            }
         }
 
         // Auto-adjust y-axis if data extends beyond current view
@@ -106,7 +109,7 @@ class PlotManager {
             }
         }
 
-        this.chart.update('none'); // 'none' for no animation to improve performance
+        this.chart.update('none');
     }
 
     // Reset plot to default view
@@ -117,6 +120,7 @@ class PlotManager {
         this.chart.options.scales.x.max = this.defaultXMax;
         this.chart.options.scales.y.min = this.defaultYMin;
         this.chart.options.scales.y.max = this.defaultYMax;
+        this.lastSlideTime = 0; // Reset the slide tracking
         this.chart.update('none');
     }
 

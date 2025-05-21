@@ -156,18 +156,18 @@ class Simulator {
 
     // Apply stimulus 1
     applyStim1() {
+        this.stim1.active = true;
+        this.stim1.startTime = this.model.time;
         if (!this.running) {
-            this.stim1.active = true;
-            this.stim1.startTime = this.model.time;
             this.runFor(50); // Run for 50ms after stimulus
         }
     }
 
     // Apply stimulus 2
     applyStim2() {
+        this.stim2.active = true;
+        this.stim2.startTime = this.model.time;
         if (!this.running) {
-            this.stim2.active = true;
-            this.stim2.startTime = this.model.time;
             this.runFor(50); // Run for 50ms after stimulus
         }
     }
