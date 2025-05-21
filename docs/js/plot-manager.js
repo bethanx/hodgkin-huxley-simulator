@@ -70,22 +70,66 @@ class PlotManager {
         });
     }
 
+    // Reset plot to default view
+    resetView() {
+        if (!this.chart || !this.canvasId) return;
+
+        // Reset all data
+        this.chart.data.labels = [];
+        this.chart.data.datasets[0].data = [];
+        
+        // Force axis reset by explicitly setting options
+        this.chart.options = {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            scales: {
+                x: {
+                    type: 'linear',
+                    min: this.defaultXMin,
+                    max: this.defaultXMax,
+                    title: {
+                        display: true,
+                        text: 'Time (ms)'
+                    }
+                },
+                y: {
+                    min: this.defaultYMin,
+                    max: this.defaultYMax,
+                    title: {
+                        display: true,
+                        text: 'Membrane Potential (mV)'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                }
+            }
+        };
+
+        // Reset internal state
+        this.updateCount = 0;
+
+        // Force a complete redraw
+        this.chart.update('none');
+    }
+
     // Update the plot with new data
     updatePlot(data, isReset = false) {
         if (!this.chart) return;
 
+        // If this is a reset, force window back to default position
+        if (isReset) {
+            this.resetView();
+            return;
+        }
+
         // Update data
         this.chart.data.labels = data.time;
         this.chart.data.datasets[0].data = data.voltage;
-
-        // If this is a reset, force window back to default position
-        if (isReset) {
-            this.chart.options.scales.x.min = this.defaultXMin;
-            this.chart.options.scales.x.max = this.defaultXMax;
-            this.updateCount = 0;
-            this.chart.update('none');
-            return;
-        }
 
         // Get current window position
         const currentMin = this.chart.options.scales.x.min;
@@ -132,70 +176,6 @@ class PlotManager {
         }
 
         this.chart.update('none');
-    }
-
-    // Reset plot to default view
-    resetView() {
-        if (!this.chart || !this.canvasId) return;
-
-        // Destroy the existing chart
-        this.chart.destroy();
-        this.chart = null;
-
-        // Clear the canvas completely
-        const canvas = document.getElementById(this.canvasId);
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Create a completely new chart
-        this.chart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: [
-                    {
-                        label: 'Membrane Potential (mV)',
-                        data: [],
-                        borderColor: 'rgb(75, 192, 192)',
-                        tension: 0.1,
-                        yAxisID: 'y'
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                animation: false,
-                scales: {
-                    x: {
-                        type: 'linear',
-                        min: this.defaultXMin,
-                        max: this.defaultXMax,
-                        title: {
-                            display: true,
-                            text: 'Time (ms)'
-                        }
-                    },
-                    y: {
-                        min: this.defaultYMin,
-                        max: this.defaultYMax,
-                        title: {
-                            display: true,
-                            text: 'Membrane Potential (mV)'
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top'
-                    }
-                }
-            }
-        });
-
-        // Reset internal state
-        this.updateCount = 0;
     }
 
     // Set the x-axis limits
