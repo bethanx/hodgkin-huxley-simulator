@@ -9,6 +9,7 @@ class Simulator {
         this.dataBuffer = {
             time: [],
             voltage: [],
+            stimCurrent: [], // Add stimulus current array
             iNa: [],
             iK: [],
             iL: [],
@@ -83,6 +84,7 @@ class Simulator {
             
             this.dataBuffer.time.push(time);
             this.dataBuffer.voltage.push(data.V);
+            this.dataBuffer.stimCurrent.push(data.iStim || 0); // Store stimulus current
             this.dataBuffer.iNa.push(data.iNa);
             this.dataBuffer.iK.push(data.iK);
             this.dataBuffer.iL.push(data.iL);
@@ -94,6 +96,7 @@ class Simulator {
             if (this.dataBuffer.time.length > this.bufferSize) {
                 this.dataBuffer.time.shift();
                 this.dataBuffer.voltage.shift();
+                this.dataBuffer.stimCurrent.shift();
                 this.dataBuffer.iNa.shift();
                 this.dataBuffer.iK.shift();
                 this.dataBuffer.iL.shift();
@@ -208,6 +211,7 @@ class Simulator {
             this.dataBuffer = {
                 time: [0],  // Start with initial time point
                 voltage: [this.model.V],  // Start with initial voltage
+                stimCurrent: [0], // Add stimulus current
                 iNa: [0],
                 iK: [0],
                 iL: [0],
@@ -226,7 +230,8 @@ class Simulator {
                 n: this.model.n,
                 iNa: 0,
                 iK: 0,
-                iL: 0
+                iL: 0,
+                iStim: 0
             });
             
             console.log('Simulator reset complete with initial state:', {
