@@ -10,7 +10,9 @@ class PlotManager {
         this.defaultYMin = -100;
         this.defaultYMax = 60;
         this.defaultXMin = 0;
-        this.defaultXMax = 50;
+        this.defaultXMax = 100;
+        this.windowSize = 100;
+        this.slideAmount = 10;
     }
 
     // Initialize the main voltage plot
@@ -72,10 +74,20 @@ class PlotManager {
         this.chart.data.labels = data.time;
         this.chart.data.datasets[0].data = data.voltage;
 
-        // Auto-adjust x-axis if data extends beyond current view
+        // Get current window position
+        const currentMin = this.chart.options.scales.x.min;
+        const currentMax = this.chart.options.scales.x.max;
+        
+        // Check if we need to slide the window
         const lastTime = data.time[data.time.length - 1] || 0;
-        if (lastTime > this.chart.options.scales.x.max) {
-            this.chart.options.scales.x.max = Math.ceil(lastTime / 50) * 50;
+        if (lastTime > currentMax) {
+            // Calculate how many slide increments we need
+            const slidesNeeded = Math.floor((lastTime - currentMax) / this.slideAmount) + 1;
+            const slideDistance = this.slideAmount * slidesNeeded;
+            
+            // Update the window position
+            this.chart.options.scales.x.min = currentMin + slideDistance;
+            this.chart.options.scales.x.max = currentMax + slideDistance;
         }
 
         // Auto-adjust y-axis if data extends beyond current view
