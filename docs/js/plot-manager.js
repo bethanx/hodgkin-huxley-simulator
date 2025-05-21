@@ -72,32 +72,37 @@ class PlotManager {
                         },
                         ticks: {
                             stepSize: 10
-                        }
+                        },
+                        bounds: 'data'
                     },
                     y: {
                         type: 'linear',
-                        min: -100,
-                        max: 60,
+                        min: this.voltageYMin,
+                        max: this.voltageYMax,
                         title: {
                             display: true,
                             text: 'Membrane Potential (mV)'
                         },
                         ticks: {
                             stepSize: 20
-                        }
+                        },
+                        bounds: 'data',
+                        beginAtZero: false
                     },
                     y2: {
                         type: 'linear',
                         position: 'right',
-                        min: -20,
-                        max: 20,
+                        min: this.stimulusYMin,
+                        max: this.stimulusYMax,
                         title: {
                             display: true,
                             text: 'Stimulus Current (μA/cm²)'
                         },
                         grid: {
                             drawOnChartArea: false
-                        }
+                        },
+                        bounds: 'data',
+                        beginAtZero: false
                     }
                 },
                 plugins: {
@@ -151,19 +156,22 @@ class PlotManager {
                         },
                         ticks: {
                             stepSize: 10
-                        }
+                        },
+                        bounds: 'data'
                     },
                     y: {
                         type: 'linear',
-                        min: 0,
-                        max: 1,
+                        min: this.gateYMin,
+                        max: this.gateYMax,
                         title: {
                             display: true,
                             text: 'Gate Value'
                         },
                         ticks: {
                             stepSize: 0.2
-                        }
+                        },
+                        bounds: 'data',
+                        beginAtZero: true
                     }
                 },
                 plugins: {
@@ -293,7 +301,57 @@ class PlotManager {
             this.gateKineticsChart.data.datasets[2].data = data.gating.n.slice(excess);
         }
 
-        // Update both charts
+        // Ensure y-axis ranges are fixed
+        this.voltageChart.options.scales.y = {
+            type: 'linear',
+            min: this.voltageYMin,
+            max: this.voltageYMax,
+            title: {
+                display: true,
+                text: 'Membrane Potential (mV)'
+            },
+            ticks: {
+                stepSize: 20
+            },
+            bounds: 'data',
+            beginAtZero: false
+        };
+
+        this.voltageChart.options.scales.y2 = {
+            type: 'linear',
+            position: 'right',
+            min: this.stimulusYMin,
+            max: this.stimulusYMax,
+            title: {
+                display: true,
+                text: 'Stimulus Current (μA/cm²)'
+            },
+            grid: {
+                drawOnChartArea: false
+            },
+            bounds: 'data',
+            beginAtZero: false
+        };
+
+        this.gateKineticsChart.options.scales.y = {
+            type: 'linear',
+            min: this.gateYMin,
+            max: this.gateYMax,
+            title: {
+                display: true,
+                text: 'Gate Value'
+            },
+            ticks: {
+                stepSize: 0.2
+            },
+            bounds: 'data',
+            beginAtZero: true
+        };
+
+        // Update both charts with animation disabled and immediate mode
+        this.voltageChart.options.animation = false;
+        this.gateKineticsChart.options.animation = false;
+        
         this.voltageChart.update('none');
         this.gateKineticsChart.update('none');
     }
