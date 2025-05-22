@@ -65,6 +65,7 @@ class PlotManager {
                 responsive: true,
                 maintainAspectRatio: false,
                 animation: false,
+                resizeDelay: 0,
                 scales: {
                     x: {
                         type: 'linear',
@@ -89,11 +90,10 @@ class PlotManager {
                         ticks: {
                             stepSize: 20
                         },
-                        grace: '5%',
-                        beginAtZero: false,
-                        adapative: false,
-                        suggestedMin: this.voltageYMin,
-                        suggestedMax: this.voltageYMax
+                        offset: true,
+                        grid: {
+                            offset: false
+                        }
                     },
                     y2: {
                         type: 'linear',
@@ -105,13 +105,16 @@ class PlotManager {
                             text: 'Stimulus Current (μA/cm²)'
                         },
                         grid: {
-                            drawOnChartArea: false
+                            drawOnChartArea: false,
+                            offset: false
                         },
-                        grace: '5%',
-                        beginAtZero: false,
-                        adapative: false,
-                        suggestedMin: this.stimulusYMin,
-                        suggestedMax: this.stimulusYMax
+                        offset: true
+                    }
+                },
+                layout: {
+                    padding: {
+                        top: 10,
+                        bottom: 10
                     }
                 },
                 plugins: {
@@ -154,6 +157,7 @@ class PlotManager {
                 responsive: true,
                 maintainAspectRatio: false,
                 animation: false,
+                resizeDelay: 0,
                 scales: {
                     x: {
                         type: 'linear',
@@ -178,11 +182,16 @@ class PlotManager {
                         ticks: {
                             stepSize: 0.2
                         },
-                        grace: '5%',
-                        beginAtZero: true,
-                        adapative: false,
-                        suggestedMin: this.gateYMin,
-                        suggestedMax: this.gateYMax
+                        offset: true,
+                        grid: {
+                            offset: false
+                        }
+                    }
+                },
+                layout: {
+                    padding: {
+                        top: 10,
+                        bottom: 10
                     }
                 },
                 plugins: {
@@ -193,6 +202,28 @@ class PlotManager {
                 }
             }
         });
+
+        // Add resize observer to handle layout changes
+        const resizeObserver = new ResizeObserver(entries => {
+            for (let entry of entries) {
+                const canvas = entry.target;
+                const chart = canvas.id === this.voltageCanvasId ? this.voltageChart : this.gateKineticsChart;
+                
+                if (chart) {
+                    // Force chart to use container dimensions
+                    canvas.style.width = '100%';
+                    canvas.style.height = '300px'; // Match the height from CSS
+                    
+                    // Update chart with animation disabled
+                    chart.resize();
+                    chart.update('none');
+                }
+            }
+        });
+
+        // Observe both canvases
+        resizeObserver.observe(document.getElementById(voltageCanvasId));
+        resizeObserver.observe(document.getElementById(gateKineticsCanvasId));
     }
 
     // Reset plots to default view
