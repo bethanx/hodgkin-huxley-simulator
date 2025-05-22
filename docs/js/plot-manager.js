@@ -253,25 +253,34 @@ class PlotManager {
             return;
         }
 
+        console.log('Starting plot update...');
+
         // Log current scales before any updates
         const beforeScales = {
             voltage: {
                 y: {
-                    min: this.voltageChart.scales.y.min,
-                    max: this.voltageChart.scales.y.max
+                    min: this.voltageChart.options.scales.y.min,
+                    max: this.voltageChart.options.scales.y.max,
+                    actualMin: this.voltageChart.scales?.y?.min,
+                    actualMax: this.voltageChart.scales?.y?.max
                 },
                 y2: {
-                    min: this.voltageChart.scales.y2.min,
-                    max: this.voltageChart.scales.y2.max
+                    min: this.voltageChart.options.scales.y2.min,
+                    max: this.voltageChart.options.scales.y2.max,
+                    actualMin: this.voltageChart.scales?.y2?.min,
+                    actualMax: this.voltageChart.scales?.y2?.max
                 }
             },
             gate: {
                 y: {
-                    min: this.gateKineticsChart.scales.y.min,
-                    max: this.gateKineticsChart.scales.y.max
+                    min: this.gateKineticsChart.options.scales.y.min,
+                    max: this.gateKineticsChart.options.scales.y.max,
+                    actualMin: this.gateKineticsChart.scales?.y?.min,
+                    actualMax: this.gateKineticsChart.scales?.y?.max
                 }
             }
         };
+        console.log('Initial scales:', beforeScales);
 
         // Calculate stimulus current data
         const stimulusCurrent = data.time.map((t, i) => {
@@ -323,7 +332,13 @@ class PlotManager {
             const newMin = currentMin + slideDistance;
             const newMax = currentMin + this.windowSize + slideDistance;
             
-            console.log('Sliding window:', { oldMin: currentMin, oldMax: currentMax, newMin, newMax });
+            console.log('Sliding window:', { 
+                oldMin: currentMin, 
+                oldMax: currentMax, 
+                newMin, 
+                newMax,
+                lastDataPoint: lastTime 
+            });
             
             this.voltageChart.options.scales.x.min = newMin;
             this.voltageChart.options.scales.x.max = newMax;
@@ -334,7 +349,11 @@ class PlotManager {
         // Buffer management
         if (data.time.length > this.bufferSize) {
             const excess = data.time.length - this.bufferSize;
-            console.log('Trimming buffer, removing', excess, 'points');
+            console.log('Trimming buffer:', {
+                totalPoints: data.time.length,
+                excess,
+                newSize: data.time.length - excess
+            });
             
             this.voltageChart.data.labels = data.time.slice(excess);
             this.voltageChart.data.datasets[0].data = data.voltage.slice(excess);
@@ -346,14 +365,44 @@ class PlotManager {
             this.gateKineticsChart.data.datasets[2].data = data.gating.n.slice(excess);
         }
 
-        // Store current scale settings before update
-        const beforeUpdate = {
-            voltage: {
-                y: { ...this.voltageChart.options.scales.y },
-                y2: { ...this.voltageChart.options.scales.y2 }
+        // Explicitly set scale options before update
+        this.voltageChart.options.scales.y = {
+            type: 'linear',
+            min: this.voltageYMin,
+            max: this.voltageYMax,
+            title: {
+                display: true,
+                text: 'Membrane Potential (mV)'
             },
-            gate: {
-                y: { ...this.gateKineticsChart.options.scales.y }
+            ticks: {
+                stepSize: 20
+            }
+        };
+
+        this.voltageChart.options.scales.y2 = {
+            type: 'linear',
+            position: 'right',
+            min: this.stimulusYMin,
+            max: this.stimulusYMax,
+            title: {
+                display: true,
+                text: 'Stimulus Current (μA/cm²)'
+            },
+            grid: {
+                drawOnChartArea: false
+            }
+        };
+
+        this.gateKineticsChart.options.scales.y = {
+            type: 'linear',
+            min: this.gateYMin,
+            max: this.gateYMax,
+            title: {
+                display: true,
+                text: 'Gate Value'
+            },
+            ticks: {
+                stepSize: 0.2
             }
         };
 
@@ -361,6 +410,7 @@ class PlotManager {
         this.voltageChart.options.animation = false;
         this.gateKineticsChart.options.animation = false;
         
+        console.log('Updating charts...');
         this.voltageChart.update('none');
         this.gateKineticsChart.update('none');
 
@@ -368,33 +418,55 @@ class PlotManager {
         const afterScales = {
             voltage: {
                 y: {
-                    min: this.voltageChart.scales.y.min,
-                    max: this.voltageChart.scales.y.max
+                    min: this.voltageChart.options.scales.y.min,
+                    max: this.voltageChart.options.scales.y.max,
+                    actualMin: this.voltageChart.scales?.y?.min,
+                    actualMax: this.voltageChart.scales?.y?.max
                 },
                 y2: {
-                    min: this.voltageChart.scales.y2.min,
-                    max: this.voltageChart.scales.y2.max
+                    min: this.voltageChart.options.scales.y2.min,
+                    max: this.voltageChart.options.scales.y2.max,
+                    actualMin: this.voltageChart.scales?.y2?.min,
+                    actualMax: this.voltageChart.scales?.y2?.max
                 }
             },
             gate: {
                 y: {
-                    min: this.gateKineticsChart.scales.y.min,
-                    max: this.gateKineticsChart.scales.y.max
+                    min: this.gateKineticsChart.options.scales.y.min,
+                    max: this.gateKineticsChart.options.scales.y.max,
+                    actualMin: this.gateKineticsChart.scales?.y?.min,
+                    actualMax: this.gateKineticsChart.scales?.y?.max
                 }
             }
         };
 
-        // Log if scales changed
-        if (JSON.stringify(beforeScales) !== JSON.stringify(afterScales)) {
-            console.log('Scale change detected!');
-            console.log('Before update:', beforeScales);
-            console.log('After update:', afterScales);
-            console.log('Scale settings:', beforeUpdate);
+        // Compare scales and log changes
+        const scalesChanged = JSON.stringify(beforeScales) !== JSON.stringify(afterScales);
+        if (scalesChanged) {
+            console.log('⚠️ Scale change detected!');
+            console.log('Before:', beforeScales);
+            console.log('After:', afterScales);
+            
+            // Check which specific scales changed
+            if (beforeScales.voltage.y.min !== afterScales.voltage.y.min || 
+                beforeScales.voltage.y.max !== afterScales.voltage.y.max) {
+                console.log('Voltage Y scale changed');
+            }
+            if (beforeScales.voltage.y2.min !== afterScales.voltage.y2.min || 
+                beforeScales.voltage.y2.max !== afterScales.voltage.y2.max) {
+                console.log('Stimulus Y scale changed');
+            }
+            if (beforeScales.gate.y.min !== afterScales.gate.y.min || 
+                beforeScales.gate.y.max !== afterScales.gate.y.max) {
+                console.log('Gate Y scale changed');
+            }
         }
 
         // Store current ranges for next comparison
         this.lastVoltageYRange = afterScales.voltage;
         this.lastGateYRange = afterScales.gate;
+        
+        console.log('Plot update complete');
     }
 
     // Set the x-axis limits for both plots
