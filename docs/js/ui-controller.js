@@ -13,7 +13,12 @@ class UIController {
 
     // Initialize the UI
     init() {
-        this.initializePlots();
+        // Delay plot initialization slightly to ensure DOM and CSS are ready
+        requestAnimationFrame(() => {
+            this.initializePlots();
+            // Other initializations that depend on plots can also be moved here if necessary
+        });
+        
         this.setupEventListeners();
         this.setupTabSystem();
         this.loadInitialParameters();
