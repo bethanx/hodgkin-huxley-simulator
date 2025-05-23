@@ -35,6 +35,10 @@ class Simulator {
             startTime: 0     // ms
         };
         
+        // Add arrays to track multiple stimulus events
+        this.stim1Events = [];
+        this.stim2Events = [];
+        
         // Store initial state
         this.storeData(this.model.time, {
             V: this.model.V,
@@ -62,16 +66,18 @@ class Simulator {
     calculateStimulusCurrent(t) {
         let iStim = 0;
         
-        if (this.stim1.active && 
-            t >= this.stim1.startTime && 
-            t < this.stim1.startTime + this.stim1.duration) {
-            iStim += this.stim1.amplitude;
+        // Check all stim1 events
+        for (const event of this.stim1Events) {
+            if (t >= event.startTime && t < event.startTime + event.duration) {
+                iStim += event.amplitude;
+            }
         }
         
-        if (this.stim2.active && 
-            t >= this.stim2.startTime && 
-            t < this.stim2.startTime + this.stim2.duration) {
-            iStim += this.stim2.amplitude;
+        // Check all stim2 events
+        for (const event of this.stim2Events) {
+            if (t >= event.startTime && t < event.startTime + event.duration) {
+                iStim += event.amplitude;
+            }
         }
         
         return iStim / 1000; // Convert μA/cm² to mA/cm²
@@ -91,6 +97,8 @@ class Simulator {
             this.dataBuffer.gating.m.push(data.m);
             this.dataBuffer.gating.h.push(data.h);
             this.dataBuffer.gating.n.push(data.n);
+            this.dataBuffer.stim1Events = this.stim1Events;  // Include stimulus events
+            this.dataBuffer.stim2Events = this.stim2Events;
             
             // Keep data arrays at reasonable size
             if (this.dataBuffer.time.length > this.bufferSize) {
@@ -160,9 +168,13 @@ class Simulator {
 
     // Apply stimulus 1
     applyStim1() {
-        this.stim1.active = true;
-        this.stim1.startTime = this.model.time;
-        this.dataBuffer.stim1 = this.stim1;  // Update stim1 in data buffer
+        // Create a new stimulus event
+        const newEvent = {
+            amplitude: this.stim1.amplitude,
+            duration: this.stim1.duration,
+            startTime: this.model.time
+        };
+        this.stim1Events.push(newEvent);
         
         // Start simulation if not running
         if (!this.running) {
@@ -178,9 +190,13 @@ class Simulator {
 
     // Apply stimulus 2
     applyStim2() {
-        this.stim2.active = true;
-        this.stim2.startTime = this.model.time;
-        this.dataBuffer.stim2 = this.stim2;  // Update stim2 in data buffer
+        // Create a new stimulus event
+        const newEvent = {
+            amplitude: this.stim2.amplitude,
+            duration: this.stim2.duration,
+            startTime: this.model.time
+        };
+        this.stim2Events.push(newEvent);
         
         // Start simulation if not running
         if (!this.running) {
@@ -208,9 +224,11 @@ class Simulator {
             this.model.reset();
             this.endTime = 0;
             
-            // Reset stimulus states
+            // Reset stimulus states and clear events
             this.stim1.active = false;
             this.stim2.active = false;
+            this.stim1Events = [];
+            this.stim2Events = [];
             
             // Clear all data buffers
             this.dataBuffer = {
