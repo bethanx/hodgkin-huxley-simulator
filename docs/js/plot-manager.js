@@ -10,8 +10,6 @@ class PlotManager {
             'g_K (uS)', 'I_leak (uA)', 'blank'
         ];
         this.selectedVars = ['m', 'h', 'n'];
-        this.defaultYMin = -100;
-        this.defaultYMax = 60;
         this.defaultXMin = 0;
         this.defaultXMax = 50;
         this.windowSize = 50;
@@ -20,153 +18,86 @@ class PlotManager {
         this.updateCount = 0;
         this.updateThreshold = 4;
 
-        // Fixed y-axis ranges
-        this.voltageYMin = -100;
-        this.voltageYMax = 60;
-        this.stimulusYMin = -20;
-        this.stimulusYMax = 20;
-        this.gateYMin = 0;
-        this.gateYMax = 1;
+        // Fixed y-axis ranges (these are the source of truth)
+        this.voltageYConfig = {
+            type: 'linear',
+            min: -100,
+            max: 60,
+            title: { display: true, text: 'Membrane Potential (mV)' },
+            ticks: { stepSize: 20 },
+        };
+        this.stimulusYConfig = {
+            type: 'linear',
+            position: 'right',
+            min: -20,
+            max: 20,
+            title: { display: true, text: 'Stimulus Current (μA/cm²)' },
+            grid: { drawOnChartArea: false },
+        };
+        this.gateYConfig = {
+            type: 'linear',
+            min: 0,
+            max: 1,
+            title: { display: true, text: 'Gate Value' },
+            ticks: { stepSize: 0.2 },
+        };
     }
 
     initPlots(voltageCanvasId, gateKineticsCanvasId) {
         this.voltageCanvasId = voltageCanvasId;
         this.gateKineticsCanvasId = gateKineticsCanvasId;
 
-        const commonOptions = {
-            responsive: false,
-            maintainAspectRatio: false,
-            animation: false,
-            plugins: {
-                legend: {
-                    display: true,
-                    position: 'top'
-                }
-            }
+        const commonXAxisConfig = {
+            type: 'linear',
+            min: this.defaultXMin,
+            max: this.defaultXMax,
+            title: { display: true, text: 'Time (ms)' },
+            ticks: { stepSize: 10 },
         };
-        
-        // Initialize voltage plot
+
         const voltageCtx = document.getElementById(voltageCanvasId).getContext('2d');
         this.voltageChart = new Chart(voltageCtx, {
             type: 'line',
             data: {
                 labels: [],
                 datasets: [
-                    {
-                        label: 'Membrane Potential (mV)',
-                        data: [],
-                        borderColor: 'rgb(255, 0, 0)',
-                        tension: 0.1,
-                        yAxisID: 'y'
-                    },
-                    {
-                        label: 'Stimulus Current (μA/cm²)',
-                        data: [],
-                        borderColor: 'rgb(128, 0, 128)',
-                        tension: 0.1,
-                        yAxisID: 'y2'
-                    }
+                    { label: 'Membrane Potential (mV)', data: [], borderColor: 'rgb(255, 0, 0)', tension: 0.1, yAxisID: 'y' },
+                    { label: 'Stimulus Current (μA/cm²)', data: [], borderColor: 'rgb(128, 0, 128)', tension: 0.1, yAxisID: 'y2' }
                 ]
             },
             options: {
-                ...commonOptions,
+                responsive: false,
+                maintainAspectRatio: false,
+                animation: false,
                 scales: {
-                    x: {
-                        type: 'linear',
-                        min: this.defaultXMin,
-                        max: this.defaultXMax,
-                        title: {
-                            display: true,
-                            text: 'Time (ms)'
-                        },
-                        ticks: {
-                            stepSize: 10
-                        }
-                    },
-                    y: {
-                        type: 'linear',
-                        min: this.voltageYMin,
-                        max: this.voltageYMax,
-                        title: {
-                            display: true,
-                            text: 'Membrane Potential (mV)'
-                        },
-                        ticks: {
-                            stepSize: 20
-                        }
-                    },
-                    y2: {
-                        type: 'linear',
-                        position: 'right',
-                        min: this.stimulusYMin,
-                        max: this.stimulusYMax,
-                        title: {
-                            display: true,
-                            text: 'Stimulus Current (μA/cm²)'
-                        },
-                        grid: {
-                            drawOnChartArea: false
-                        }
-                    }
-                }
+                    x: commonXAxisConfig,
+                    y: { ...this.voltageYConfig },
+                    y2: { ...this.stimulusYConfig },
+                },
+                plugins: { legend: { display: true, position: 'top' } }
             }
         });
 
-        // Initialize gate kinetics plot
         const gateKineticsCtx = document.getElementById(gateKineticsCanvasId).getContext('2d');
         this.gateKineticsChart = new Chart(gateKineticsCtx, {
             type: 'line',
             data: {
                 labels: [],
                 datasets: [
-                    {
-                        label: 'm (Na+ activation)',
-                        data: [],
-                        borderColor: 'rgb(255, 255, 0)',
-                        tension: 0.1
-                    },
-                    {
-                        label: 'h (Na+ inactivation)',
-                        data: [],
-                        borderColor: 'rgb(0, 255, 0)',
-                        tension: 0.1
-                    },
-                    {
-                        label: 'n (K+ activation)',
-                        data: [],
-                        borderColor: 'rgb(0, 255, 255)',
-                        tension: 0.1
-                    }
+                    { label: 'm (Na+ activation)', data: [], borderColor: 'rgb(255, 255, 0)', tension: 0.1 },
+                    { label: 'h (Na+ inactivation)', data: [], borderColor: 'rgb(0, 255, 0)', tension: 0.1 },
+                    { label: 'n (K+ activation)', data: [], borderColor: 'rgb(0, 255, 255)', tension: 0.1 }
                 ]
             },
             options: {
-                ...commonOptions,
+                responsive: false,
+                maintainAspectRatio: false,
+                animation: false,
                 scales: {
-                    x: {
-                        type: 'linear',
-                        min: this.defaultXMin,
-                        max: this.defaultXMax,
-                        title: {
-                            display: true,
-                            text: 'Time (ms)'
-                        },
-                        ticks: {
-                            stepSize: 10
-                        }
-                    },
-                    y: {
-                        type: 'linear',
-                        min: this.gateYMin,
-                        max: this.gateYMax,
-                        title: {
-                            display: true,
-                            text: 'Gate Value'
-                        },
-                        ticks: {
-                            stepSize: 0.2
-                        }
-                    }
-                }
+                    x: commonXAxisConfig,
+                    y: { ...this.gateYConfig },
+                },
+                plugins: { legend: { display: true, position: 'top' } }
             }
         });
     }
@@ -179,7 +110,6 @@ class PlotManager {
             return;
         }
 
-        // Calculate stimulus current data
         const stimulusCurrent = data.time.map((t, i) => {
             let iStim = 0;
             if (data.stim1 && data.stim1.active && t >= data.stim1.startTime && t < data.stim1.startTime + data.stim1.duration) {
@@ -191,7 +121,6 @@ class PlotManager {
             return iStim;
         });
 
-        // Update data
         this.voltageChart.data.labels = data.time;
         this.voltageChart.data.datasets[0].data = data.voltage;
         this.voltageChart.data.datasets[1].data = stimulusCurrent;
@@ -201,119 +130,88 @@ class PlotManager {
         this.gateKineticsChart.data.datasets[1].data = data.gating.h;
         this.gateKineticsChart.data.datasets[2].data = data.gating.n;
 
-        // Handle x-axis sliding window
-        const currentMin = this.voltageChart.options.scales.x.min;
-        const currentMax = this.voltageChart.options.scales.x.max;
+        const currentXMin = this.voltageChart.options.scales.x.min;
+        const currentXMax = this.voltageChart.options.scales.x.max;
         const lastTime = data.time[data.time.length - 1] || 0;
 
-        if (lastTime > currentMax) {
-            const slideDistance = this.slideAmount;
-            const newMin = currentMin + slideDistance;
-            const newMax = currentMin + this.windowSize + slideDistance;
-            
+        if (lastTime > currentXMax) {
+            const newMin = currentXMin + this.slideAmount;
+            const newMax = currentXMin + this.windowSize + this.slideAmount;
             this.voltageChart.options.scales.x.min = newMin;
             this.voltageChart.options.scales.x.max = newMax;
             this.gateKineticsChart.options.scales.x.min = newMin;
             this.gateKineticsChart.options.scales.x.max = newMax;
         }
 
-        // Buffer management
         if (data.time.length > this.bufferSize) {
             const excess = data.time.length - this.bufferSize;
-            
             this.voltageChart.data.labels = data.time.slice(excess);
             this.voltageChart.data.datasets[0].data = data.voltage.slice(excess);
             this.voltageChart.data.datasets[1].data = stimulusCurrent.slice(excess);
-            
             this.gateKineticsChart.data.labels = data.time.slice(excess);
             this.gateKineticsChart.data.datasets[0].data = data.gating.m.slice(excess);
             this.gateKineticsChart.data.datasets[1].data = data.gating.h.slice(excess);
             this.gateKineticsChart.data.datasets[2].data = data.gating.n.slice(excess);
         }
+        
+        // Force Y axis configuration on every update
+        this.voltageChart.options.scales.y = { ...this.voltageYConfig };
+        this.voltageChart.options.scales.y2 = { ...this.stimulusYConfig };
+        this.gateKineticsChart.options.scales.y = { ...this.gateYConfig };
 
-        // Update both charts
         this.voltageChart.update('none');
         this.gateKineticsChart.update('none');
     }
 
     resetView() {
-        if (!this.voltageChart || !this.gateKineticsChart) return;
-        
-        // Reset voltage plot
-        const oldVoltageCanvas = document.getElementById(this.voltageCanvasId);
-        const voltageParent = oldVoltageCanvas.parentNode;
-        const voltageWidth = oldVoltageCanvas.width;
-        const voltageHeight = oldVoltageCanvas.height;
-        
-        this.voltageChart.destroy();
-        this.voltageChart = null;
-        oldVoltageCanvas.remove();
-        
+        if (this.voltageChart) this.voltageChart.destroy();
+        if (this.gateKineticsChart) this.gateKineticsChart.destroy();
+
+        // Re-create canvases because destroy removes them
+        const voltageParent = document.getElementById(this.voltageCanvasId).parentNode;
         const newVoltageCanvas = document.createElement('canvas');
         newVoltageCanvas.id = this.voltageCanvasId;
-        newVoltageCanvas.width = voltageWidth;
-        newVoltageCanvas.height = voltageHeight;
+        newVoltageCanvas.width = 800; // Match CSS
+        newVoltageCanvas.height = 300; // Match CSS
+        voltageParent.innerHTML = ''; // Clear old canvas if any remnants
         voltageParent.appendChild(newVoltageCanvas);
 
-        // Reset gate kinetics plot
-        const oldGateCanvas = document.getElementById(this.gateKineticsCanvasId);
-        const gateParent = oldGateCanvas.parentNode;
-        const gateWidth = oldGateCanvas.width;
-        const gateHeight = oldGateCanvas.height;
-        
-        this.gateKineticsChart.destroy();
-        this.gateKineticsChart = null;
-        oldGateCanvas.remove();
-        
+        const gateParent = document.getElementById(this.gateKineticsCanvasId).parentNode;
         const newGateCanvas = document.createElement('canvas');
         newGateCanvas.id = this.gateKineticsCanvasId;
-        newGateCanvas.width = gateWidth;
-        newGateCanvas.height = gateHeight;
+        newGateCanvas.width = 800; // Match CSS
+        newGateCanvas.height = 300; // Match CSS
+        gateParent.innerHTML = ''; // Clear old canvas
         gateParent.appendChild(newGateCanvas);
 
-        // Reinitialize both plots
         this.initPlots(this.voltageCanvasId, this.gateKineticsCanvasId);
-        
-        // Reset all internal state
-        this.updateCount = 0;
     }
 
     setXAxisLimits(center, width) {
         if (!this.voltageChart || !this.gateKineticsChart) return;
-        
-        const min = Math.max(0, center - width/2);
-        const max = center + width/2;
-        
-        this.voltageChart.options.scales.x.min = min;
-        this.voltageChart.options.scales.x.max = max;
-        this.gateKineticsChart.options.scales.x.min = min;
-        this.gateKineticsChart.options.scales.x.max = max;
-        
+        const newMin = Math.max(0, center - width / 2);
+        const newMax = center + width / 2;
+        this.voltageChart.options.scales.x.min = newMin;
+        this.voltageChart.options.scales.x.max = newMax;
+        this.gateKineticsChart.options.scales.x.min = newMin;
+        this.gateKineticsChart.options.scales.x.max = newMax;
         this.voltageChart.update('none');
         this.gateKineticsChart.update('none');
     }
 
-    resizePlot(factor) {
+    resizePlot(factor) { // This might not be needed with responsive:false
         if (!this.voltageChart || !this.gateKineticsChart) return;
-        
         const currentMin = this.voltageChart.options.scales.x.min;
         const currentMax = this.voltageChart.options.scales.x.max;
         const currentWidth = currentMax - currentMin;
         const center = (currentMax + currentMin) / 2;
-        
         const newWidth = factor > 0 ? currentWidth * 1.5 : currentWidth / 1.5;
         this.setXAxisLimits(center, newWidth);
     }
 
     destroy() {
-        if (this.voltageChart) {
-            this.voltageChart.destroy();
-            this.voltageChart = null;
-        }
-        if (this.gateKineticsChart) {
-            this.gateKineticsChart.destroy();
-            this.gateKineticsChart = null;
-        }
+        if (this.voltageChart) this.voltageChart.destroy();
+        if (this.gateKineticsChart) this.gateKineticsChart.destroy();
     }
 }
 
