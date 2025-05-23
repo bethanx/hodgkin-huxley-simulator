@@ -177,14 +177,14 @@ class Simulator {
         };
         this.stim1Events.push(newEvent);
         
-        const stimEndTime = newEvent.startTime + newEvent.duration;
-        const requiredEndTime = stimEndTime + 50; // Run for 50ms after stimulus ends
-
+        // Start simulation if not running
         if (!this.running) {
-            this.runFor(requiredEndTime - this.model.time);
+            this.runFor(50);
         } else {
-            if (requiredEndTime > this.endTime) {
-                this.endTime = requiredEndTime;
+            // Extend simulation time if running
+            const endTime = this.model.time + 50;
+            if (endTime > this.endTime) {
+                this.endTime = endTime;
             }
         }
     }
@@ -199,14 +199,14 @@ class Simulator {
         };
         this.stim2Events.push(newEvent);
         
-        const stimEndTime = newEvent.startTime + newEvent.duration;
-        const requiredEndTime = stimEndTime + 50; // Run for 50ms after stimulus ends
-
+        // Start simulation if not running
         if (!this.running) {
-            this.runFor(requiredEndTime - this.model.time);
+            this.runFor(50);
         } else {
-            if (requiredEndTime > this.endTime) {
-                this.endTime = requiredEndTime;
+            // Extend simulation time if running
+            const endTime = this.model.time + 50;
+            if (endTime > this.endTime) {
+                this.endTime = endTime;
             }
         }
     }
