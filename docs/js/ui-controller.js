@@ -8,12 +8,17 @@ class UIController {
         this.activeTab = 'membrane';
         
         // Bind simulator update callback
-        this.simulator.onUpdate = (data, isReset) => this.plotManager.updatePlot(data, isReset);
+        this.simulator.onUpdate = (data, isReset) => this.plotManager.updatePlots(data, isReset);
     }
 
     // Initialize the UI
     init() {
-        this.initializePlots();
+        // Delay plot initialization slightly to ensure DOM and CSS are ready
+        requestAnimationFrame(() => {
+            this.initializePlots();
+            // Other initializations that depend on plots can also be moved here if necessary
+        });
+        
         this.setupEventListeners();
         this.setupTabSystem();
         this.loadInitialParameters();
@@ -21,7 +26,22 @@ class UIController {
 
     // Initialize plots
     initializePlots() {
-        this.plotManager.initMainPlot('plotCanvas');
+        const voltageCanvas = document.getElementById('plotCanvas');
+        const gateKineticsCanvas = document.getElementById('gateKineticsCanvas');
+
+        const canvasWidth = 800; // As per your CSS
+        const canvasHeight = 300; // As per your CSS
+
+        if (voltageCanvas) {
+            voltageCanvas.width = canvasWidth;
+            voltageCanvas.height = canvasHeight;
+        }
+        if (gateKineticsCanvas) {
+            gateKineticsCanvas.width = canvasWidth;
+            gateKineticsCanvas.height = canvasHeight;
+        }
+        // Now that canvas attributes are set, initialize the plots
+        this.plotManager.initPlots('plotCanvas', 'gateKineticsCanvas');
     }
 
     // Set up event listeners for all UI elements

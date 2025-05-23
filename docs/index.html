@@ -55,11 +55,13 @@
         .param-input {
             flex: 1;
         }
-        #plotCanvas {
-            width: 100%;
-            height: 400px;
+        .plot-container {
+            margin-bottom: 20px;
+        }
+        #plotCanvas, #gateKineticsCanvas {
             border: 1px solid #ccc;
             margin-bottom: 20px;
+            /* Width and height are now handled in JavaScript */
         }
         .tab-buttons {
             display: flex;
@@ -189,7 +191,12 @@
         </div>
 
         <div id="plotContainer">
-            <canvas id="plotCanvas"></canvas>
+            <div class="plot-container">
+                <canvas id="plotCanvas"></canvas>
+            </div>
+            <div class="plot-container">
+                <canvas id="gateKineticsCanvas"></canvas>
+            </div>
         </div>
     </div>
 

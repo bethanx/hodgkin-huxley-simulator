@@ -16,7 +16,9 @@ class Simulator {
                 m: [],
                 h: [],
                 n: []
-            }
+            },
+            stim1: this.stim1,
+            stim2: this.stim2
         };
         this.bufferSize = 2000;
         this.onUpdate = null;
@@ -160,6 +162,7 @@ class Simulator {
     applyStim1() {
         this.stim1.active = true;
         this.stim1.startTime = this.model.time;
+        this.dataBuffer.stim1 = this.stim1;  // Update stim1 in data buffer
         
         // Start simulation if not running
         if (!this.running) {
@@ -177,6 +180,7 @@ class Simulator {
     applyStim2() {
         this.stim2.active = true;
         this.stim2.startTime = this.model.time;
+        this.dataBuffer.stim2 = this.stim2;  // Update stim2 in data buffer
         
         // Start simulation if not running
         if (!this.running) {
@@ -204,6 +208,10 @@ class Simulator {
             this.model.reset();
             this.endTime = 0;
             
+            // Reset stimulus states
+            this.stim1.active = false;
+            this.stim2.active = false;
+            
             // Clear all data buffers
             this.dataBuffer = {
                 time: [0],  // Start with initial time point
@@ -215,7 +223,9 @@ class Simulator {
                     m: [this.model.m],
                     h: [this.model.h],
                     n: [this.model.n]
-                }
+                },
+                stim1: this.stim1,
+                stim2: this.stim2
             };
             
             // Store initial state
