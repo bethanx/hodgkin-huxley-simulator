@@ -125,7 +125,7 @@ class Simulator {
         let lastUpdateTime = performance.now();
         const targetFrameTime = 1000 / 60; // Target 60 FPS
         let accumulatedTime = 0;
-        const maxTimeStep = 0.1; // Maximum time step in ms (matching MATLAB's default)
+        const maxTimeStep = 0.1; // Maximum time step in ms
         
         const simulate = (currentTime) => {
             if (!this.running) return;
@@ -136,7 +136,7 @@ class Simulator {
             // Only update if enough time has passed
             while (accumulatedTime >= targetFrameTime) {
                 // Run multiple steps per frame for efficiency
-                const numSteps = Math.ceil(targetFrameTime / maxTimeStep); // Use ceil to ensure we don't exceed maxTimeStep
+                const numSteps = Math.min(10, Math.floor(targetFrameTime / maxTimeStep));
                 const dt = targetFrameTime / numSteps;
                 
                 for (let i = 0; i < numSteps; i++) {
