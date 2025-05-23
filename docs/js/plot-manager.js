@@ -31,8 +31,8 @@ class PlotManager {
         this.stimulusYConfig = {
             type: 'linear',
             position: 'right',
-            min: -20,
-            max: 20,
+            min: -105,  // Adjusted to account for -85 offset (-20 - 85)
+            max: -65,   // Adjusted to account for -85 offset (20 - 85)
             title: { display: true, text: 'Stimulus Current (μA/cm²)' },
             grid: { drawOnChartArea: false },
         };
@@ -135,7 +135,8 @@ class PlotManager {
             if (data.stim2 && data.stim2.active && t >= data.stim2.startTime && t < data.stim2.startTime + data.stim2.duration) {
                 iStim += data.stim2.amplitude;
             }
-            return iStim;
+            // Add -85 offset to match MATLAB implementation for visualization
+            return iStim - 85;
         });
 
         this.voltageChart.data.labels = data.time;
