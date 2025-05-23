@@ -26,6 +26,21 @@ class UIController {
 
     // Initialize plots
     initializePlots() {
+        const voltageCanvas = document.getElementById('plotCanvas');
+        const gateKineticsCanvas = document.getElementById('gateKineticsCanvas');
+
+        const canvasWidth = 800; // As per your CSS
+        const canvasHeight = 300; // As per your CSS
+
+        if (voltageCanvas) {
+            voltageCanvas.width = canvasWidth;
+            voltageCanvas.height = canvasHeight;
+        }
+        if (gateKineticsCanvas) {
+            gateKineticsCanvas.width = canvasWidth;
+            gateKineticsCanvas.height = canvasHeight;
+        }
+        // Now that canvas attributes are set, initialize the plots
         this.plotManager.initPlots('plotCanvas', 'gateKineticsCanvas');
     }
 
