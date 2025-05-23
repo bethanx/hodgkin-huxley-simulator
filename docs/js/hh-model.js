@@ -76,8 +76,11 @@ class HHModel {
         const { iNa, iK, iL } = this.calculateCurrents();
         const iTot = iNa + iK + iL;
         
+        // Convert stimulus from μA/cm² to mA/cm² to match other currents
+        const iStimMa = iStim / 1000;
+        
         // Update membrane potential (convert back to mV)
-        this.V += (this.dt * (iStim - iTot) / this.Cm) * 1000;
+        this.V += (this.dt * (iStimMa - iTot) / this.Cm) * 1000;
         
         // Update time
         this.time += this.dt;

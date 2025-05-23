@@ -80,7 +80,8 @@ class Simulator {
             }
         }
         
-        return iStim / 1000; // Convert μA/cm² to mA/cm²
+        // Match MATLAB implementation scaling (no conversion needed since we're already in μA/cm²)
+        return iStim;
     }
 
     // Store simulation data
