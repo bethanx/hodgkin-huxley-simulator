@@ -47,6 +47,19 @@ class PlotManager {
         this.voltageCanvasId = voltageCanvasId;
         this.gateKineticsCanvasId = gateKineticsCanvasId;
 
+        const voltageCanvas = document.getElementById(voltageCanvasId);
+        const gateKineticsCanvas = document.getElementById(gateKineticsCanvasId);
+
+        // Explicitly set canvas dimensions from CSS or desired fixed size
+        // Ensure this matches your CSS, or set your desired fixed size directly here.
+        const canvasWidth = 800; // As per your CSS
+        const canvasHeight = 300; // As per your CSS
+
+        voltageCanvas.width = canvasWidth;
+        voltageCanvas.height = canvasHeight;
+        gateKineticsCanvas.width = canvasWidth;
+        gateKineticsCanvas.height = canvasHeight;
+
         const commonXAxisConfig = {
             type: 'linear',
             min: this.defaultXMin,
