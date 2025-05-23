@@ -5,7 +5,7 @@ class HHModel {
     constructor() {
         // Membrane properties
         this.Cm = 1.0;  // µF/cm²
-        this.V = -65;   // mV (initial membrane potential)
+        this.V = -63.39;   // mV (initial membrane potential)
         
         // Channel conductances
         this.gNaMax = 120; // mS/cm²
@@ -18,9 +18,9 @@ class HHModel {
         this.EL = -54.4;   // mV
         
         // Gate variables
-        this.m = 0.05;  // Na+ activation
-        this.h = 0.6;   // Na+ inactivation
-        this.n = 0.32;  // K+ activation
+        this.m = 0.068775;  // Na+ activation
+        this.h = 0.515186;   // Na+ inactivation
+        this.n = 0.35286656;  // K+ activation
         
         // Channel modifiers
         this.ttxBlock = 0;  // Na+ channel block (0-1)
@@ -28,18 +28,21 @@ class HHModel {
         this.pronase = false; // Removes inactivation if true
         
         // Time step
-        this.dt = 0.01;  // ms
+        this.dt = 0.0001;  // ms
         this.time = 0;   // ms
 
         // Initialize gates to steady state
-        this.updateSteadyStateGates();
+        // this.updateSteadyStateGates(); // Match MATLAB: Do not force to steady state initially
     }
 
     // Reset the model to initial conditions
     reset() {
-        this.V = -65;
+        this.V = -63.39; // Reset to MATLAB default V
         this.time = 0;
-        this.updateSteadyStateGates();
+        this.m = 0.068775;  // Reset to MATLAB default m
+        this.h = 0.515186;   // Reset to MATLAB default h
+        this.n = 0.35286656;  // Reset to MATLAB default n
+        // DO NOT call updateSteadyStateGates() to match MATLAB's initial state handling.
     }
 
     // Update gate variables to steady state values
