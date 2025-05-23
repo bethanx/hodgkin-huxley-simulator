@@ -5,7 +5,7 @@ class HHModel {
     constructor() {
         // Membrane properties
         this.Cm = 1.0;  // µF/cm²
-        this.V = -65;   // mV (initial membrane potential)
+        this.V = -63.39;   // mV (initial membrane potential)
         
         // Channel conductances
         this.gNaMax = 120; // mS/cm²
@@ -28,7 +28,7 @@ class HHModel {
         this.pronase = false; // Removes inactivation if true
         
         // Time step
-        this.dt = 0.01;  // ms
+        this.dt = 0.1;  // ms (0.1 ms = 1e-4 seconds, matching MATLAB's default)
         this.time = 0;   // ms
 
         // Initialize gates to steady state
@@ -37,7 +37,7 @@ class HHModel {
 
     // Reset the model to initial conditions
     reset() {
-        this.V = -65;
+        this.V = -63.39;
         this.time = 0;
         this.updateSteadyStateGates();
     }
