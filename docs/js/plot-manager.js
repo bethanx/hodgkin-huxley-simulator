@@ -31,8 +31,8 @@ class PlotManager {
         this.stimulusYConfig = {
             type: 'linear',
             position: 'right',
-            min: -20,
-            max: 20,
+            min: -105,  // Adjusted to account for -85 offset (-20 - 85)
+            max: -65,   // Adjusted to account for -85 offset (20 - 85)
             title: { display: true, text: 'Stimulus Current (μA/cm²)' },
             grid: { drawOnChartArea: false },
         };
@@ -129,13 +129,26 @@ class PlotManager {
 
         const stimulusCurrent = data.time.map((t, i) => {
             let iStim = 0;
-            if (data.stim1 && data.stim1.active && t >= data.stim1.startTime && t < data.stim1.startTime + data.stim1.duration) {
-                iStim += data.stim1.amplitude;
+            // Check all stim1 events
+            if (data.stim1Events) {
+                for (const event of data.stim1Events) {
+                    if (t >= event.startTime && t < event.startTime + event.duration) {
+                        iStim += event.amplitude;
+                    }
+                }
             }
-            if (data.stim2 && data.stim2.active && t >= data.stim2.startTime && t < data.stim2.startTime + data.stim2.duration) {
-                iStim += data.stim2.amplitude;
+            
+            // Check all stim2 events
+            if (data.stim2Events) {
+                for (const event of data.stim2Events) {
+                    if (t >= event.startTime && t < event.startTime + event.duration) {
+                        iStim += event.amplitude;
+                    }
+                }
             }
-            return iStim;
+            
+            // Add -85 offset to match MATLAB implementation for visualization
+            return iStim - 85;
         });
 
         this.voltageChart.data.labels = data.time;
