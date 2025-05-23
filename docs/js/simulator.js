@@ -30,7 +30,7 @@ class Simulator {
         };
         this.stim2 = {
             amplitude: -10,  // μA/cm²
-            duration: 2,     // ms (Changed from 1ms to 2ms to match MATLAB)
+            duration: 1,     // ms
             active: false,
             startTime: 0     // ms
         };
