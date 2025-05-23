@@ -4,6 +4,8 @@ class PlotManager {
         this.gateKineticsChart = null;
         this.voltageCanvasId = null;
         this.gateKineticsCanvasId = null;
+        this.canvasWidth = 800;  // Store canvas dimensions as class properties
+        this.canvasHeight = 300;
         this.varList = [
             'm', 'h', 'n',
             'I_Na (uA)', 'I_K (uA)', 'g_Na (uS)',
@@ -47,18 +49,20 @@ class PlotManager {
         this.voltageCanvasId = voltageCanvasId;
         this.gateKineticsCanvasId = gateKineticsCanvasId;
 
+        // Get canvas elements
         const voltageCanvas = document.getElementById(voltageCanvasId);
         const gateKineticsCanvas = document.getElementById(gateKineticsCanvasId);
 
-        // Explicitly set canvas dimensions from CSS or desired fixed size
-        // Ensure this matches your CSS, or set your desired fixed size directly here.
-        const canvasWidth = 800; // As per your CSS
-        const canvasHeight = 300; // As per your CSS
-
-        voltageCanvas.width = canvasWidth;
-        voltageCanvas.height = canvasHeight;
-        gateKineticsCanvas.width = canvasWidth;
-        gateKineticsCanvas.height = canvasHeight;
+        // Set both the canvas dimensions and style dimensions to ensure proper scaling
+        voltageCanvas.width = this.canvasWidth;
+        voltageCanvas.height = this.canvasHeight;
+        voltageCanvas.style.width = `${this.canvasWidth}px`;
+        voltageCanvas.style.height = `${this.canvasHeight}px`;
+        
+        gateKineticsCanvas.width = this.canvasWidth;
+        gateKineticsCanvas.height = this.canvasHeight;
+        gateKineticsCanvas.style.width = `${this.canvasWidth}px`;
+        gateKineticsCanvas.style.height = `${this.canvasHeight}px`;
 
         const commonXAxisConfig = {
             type: 'linear',
@@ -184,16 +188,20 @@ class PlotManager {
         const voltageParent = document.getElementById(this.voltageCanvasId).parentNode;
         const newVoltageCanvas = document.createElement('canvas');
         newVoltageCanvas.id = this.voltageCanvasId;
-        newVoltageCanvas.width = 800; // Match CSS
-        newVoltageCanvas.height = 300; // Match CSS
+        newVoltageCanvas.width = this.canvasWidth;
+        newVoltageCanvas.height = this.canvasHeight;
+        newVoltageCanvas.style.width = `${this.canvasWidth}px`;
+        newVoltageCanvas.style.height = `${this.canvasHeight}px`;
         voltageParent.innerHTML = ''; // Clear old canvas if any remnants
         voltageParent.appendChild(newVoltageCanvas);
 
         const gateParent = document.getElementById(this.gateKineticsCanvasId).parentNode;
         const newGateCanvas = document.createElement('canvas');
         newGateCanvas.id = this.gateKineticsCanvasId;
-        newGateCanvas.width = 800; // Match CSS
-        newGateCanvas.height = 300; // Match CSS
+        newGateCanvas.width = this.canvasWidth;
+        newGateCanvas.height = this.canvasHeight;
+        newGateCanvas.style.width = `${this.canvasWidth}px`;
+        newGateCanvas.style.height = `${this.canvasHeight}px`;
         gateParent.innerHTML = ''; // Clear old canvas
         gateParent.appendChild(newGateCanvas);
 
