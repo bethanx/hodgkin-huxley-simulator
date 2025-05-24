@@ -28,7 +28,7 @@ class HHModel {
         this.pronase = false; // Removes inactivation if true
         
         // Time step
-        this.dt = 0.0001;  // ms
+        this.dt = 0.001;  // ms
         this.time = 0;   // ms
 
         // Initialize gates to steady state
