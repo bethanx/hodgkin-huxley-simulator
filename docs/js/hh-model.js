@@ -12,10 +12,10 @@ class HHModel {
         this.gKMax = 36;   // mS/cm²
         this.gL = 0.3;     // mS/cm²
         
-        // Reversal potentials (calculated for T=6.3°C from MATLAB defaults)
+        // Reversal potentials (calculated for T=6.3°C from MATLAB defaults, EL canonical)
         this.ENa = 52.36;     // mV (was 50)
         this.EK = -72.17;     // mV (was -77)
-        this.EL = -57.25;   // mV (was -54.4, using ECl_matlab for T=6.3°C)
+        this.EL = -54.4;   // mV (reverted to canonical -54.4, was -57.25)
         
         // Gate variables
         this.m = 0.068775;  // Na+ activation
