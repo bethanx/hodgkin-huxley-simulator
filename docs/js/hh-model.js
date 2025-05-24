@@ -42,7 +42,7 @@ class HHModel {
         this.m = 0.068775;  // Reset to MATLAB default m
         this.h = 0.515186;   // Reset to MATLAB default h
         this.n = 0.35286656;  // Reset to MATLAB default n
-        // DO NOT call updateSteadyStateGates() to match MATLAB's initial state handling.
+        this.updateSteadyStateGates(); // Ensure gates are steady state for the reset V
     }
 
     // Update gate variables to steady state values
